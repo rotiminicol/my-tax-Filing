@@ -9,38 +9,188 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TaxesRouteImport } from './routes/taxes'
+import { Route as RentReceiptRouteImport } from './routes/rent-receipt'
+import { Route as NewsRouteImport } from './routes/news'
+import { Route as EInvoicingRouteImport } from './routes/e-invoicing'
+import { Route as DocumentRenewalRouteImport } from './routes/document-renewal'
+import { Route as ContactRouteImport } from './routes/contact'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as LegalTermsRouteImport } from './routes/legal.terms'
+import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
 
+const TaxesRoute = TaxesRouteImport.update({
+  id: '/taxes',
+  path: '/taxes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RentReceiptRoute = RentReceiptRouteImport.update({
+  id: '/rent-receipt',
+  path: '/rent-receipt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NewsRoute = NewsRouteImport.update({
+  id: '/news',
+  path: '/news',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EInvoicingRoute = EInvoicingRouteImport.update({
+  id: '/e-invoicing',
+  path: '/e-invoicing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocumentRenewalRoute = DocumentRenewalRouteImport.update({
+  id: '/document-renewal',
+  path: '/document-renewal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LegalTermsRoute = LegalTermsRouteImport.update({
+  id: '/legal/terms',
+  path: '/legal/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalPrivacyRoute = LegalPrivacyRouteImport.update({
+  id: '/legal/privacy',
+  path: '/legal/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/contact': typeof ContactRoute
+  '/document-renewal': typeof DocumentRenewalRoute
+  '/e-invoicing': typeof EInvoicingRoute
+  '/news': typeof NewsRoute
+  '/rent-receipt': typeof RentReceiptRoute
+  '/taxes': typeof TaxesRoute
+  '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/terms': typeof LegalTermsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/contact': typeof ContactRoute
+  '/document-renewal': typeof DocumentRenewalRoute
+  '/e-invoicing': typeof EInvoicingRoute
+  '/news': typeof NewsRoute
+  '/rent-receipt': typeof RentReceiptRoute
+  '/taxes': typeof TaxesRoute
+  '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/terms': typeof LegalTermsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/contact': typeof ContactRoute
+  '/document-renewal': typeof DocumentRenewalRoute
+  '/e-invoicing': typeof EInvoicingRoute
+  '/news': typeof NewsRoute
+  '/rent-receipt': typeof RentReceiptRoute
+  '/taxes': typeof TaxesRoute
+  '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/terms': typeof LegalTermsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/contact'
+    | '/document-renewal'
+    | '/e-invoicing'
+    | '/news'
+    | '/rent-receipt'
+    | '/taxes'
+    | '/legal/privacy'
+    | '/legal/terms'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/contact'
+    | '/document-renewal'
+    | '/e-invoicing'
+    | '/news'
+    | '/rent-receipt'
+    | '/taxes'
+    | '/legal/privacy'
+    | '/legal/terms'
+  id:
+    | '__root__'
+    | '/'
+    | '/contact'
+    | '/document-renewal'
+    | '/e-invoicing'
+    | '/news'
+    | '/rent-receipt'
+    | '/taxes'
+    | '/legal/privacy'
+    | '/legal/terms'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ContactRoute: typeof ContactRoute
+  DocumentRenewalRoute: typeof DocumentRenewalRoute
+  EInvoicingRoute: typeof EInvoicingRoute
+  NewsRoute: typeof NewsRoute
+  RentReceiptRoute: typeof RentReceiptRoute
+  TaxesRoute: typeof TaxesRoute
+  LegalPrivacyRoute: typeof LegalPrivacyRoute
+  LegalTermsRoute: typeof LegalTermsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/taxes': {
+      id: '/taxes'
+      path: '/taxes'
+      fullPath: '/taxes'
+      preLoaderRoute: typeof TaxesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rent-receipt': {
+      id: '/rent-receipt'
+      path: '/rent-receipt'
+      fullPath: '/rent-receipt'
+      preLoaderRoute: typeof RentReceiptRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/news': {
+      id: '/news'
+      path: '/news'
+      fullPath: '/news'
+      preLoaderRoute: typeof NewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/e-invoicing': {
+      id: '/e-invoicing'
+      path: '/e-invoicing'
+      fullPath: '/e-invoicing'
+      preLoaderRoute: typeof EInvoicingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/document-renewal': {
+      id: '/document-renewal'
+      path: '/document-renewal'
+      fullPath: '/document-renewal'
+      preLoaderRoute: typeof DocumentRenewalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +198,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/legal/terms': {
+      id: '/legal/terms'
+      path: '/legal/terms'
+      fullPath: '/legal/terms'
+      preLoaderRoute: typeof LegalTermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/privacy': {
+      id: '/legal/privacy'
+      path: '/legal/privacy'
+      fullPath: '/legal/privacy'
+      preLoaderRoute: typeof LegalPrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ContactRoute: ContactRoute,
+  DocumentRenewalRoute: DocumentRenewalRoute,
+  EInvoicingRoute: EInvoicingRoute,
+  NewsRoute: NewsRoute,
+  RentReceiptRoute: RentReceiptRoute,
+  TaxesRoute: TaxesRoute,
+  LegalPrivacyRoute: LegalPrivacyRoute,
+  LegalTermsRoute: LegalTermsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

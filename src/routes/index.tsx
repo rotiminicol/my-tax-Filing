@@ -1,29 +1,38 @@
 import { createFileRoute } from "@tanstack/react-router";
+import AppShell from "@/components/layout/AppShell";
+import HeroSection from "@/components/fiscal-landing/HeroSection";
+import ToolsSection from "@/components/fiscal-landing/ToolsSection";
+import StepsSection from "@/components/fiscal-landing/StepsSection";
+import UnifiedPricing from "@/components/sections/UnifiedPricing";
+import FinalCtaSection from "@/components/fiscal-landing/FinalCtaSection";
+import FiscalFooter from "@/components/fiscal-landing/FiscalFooter";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Your App" },
-      { name: "description", content: "Replace this with a one-sentence description of your app." },
-      { property: "og:title", content: "Your App" },
-      { property: "og:description", content: "Replace this with a one-sentence description of your app." },
+      { title: "My Tax Filing — Compliance, simplified" },
+      { name: "description", content: "File taxes, issue e-invoices, generate rent receipts and renew documents from one elegant workspace." },
+      { property: "og:title", content: "My Tax Filing" },
+      { property: "og:description", content: "The modern compliance portal for individuals, landlords and businesses." },
     ],
   }),
-  component: Index,
+  component: Home,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
+function Home() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
+    <AppShell hideFooter>
+      <main className="overflow-x-hidden font-sans" style={{ backgroundColor: "#fcfaf5" }}>
+        <HeroSection />
+        <ToolsSection />
+        <StepsSection />
+        <UnifiedPricing
+          headerTitle="Pricing Plans"
+          headerSubtitle="Plans designed to scale with your financial journey."
+        />
+        <FinalCtaSection />
+        <FiscalFooter />
+      </main>
+    </AppShell>
   );
 }
