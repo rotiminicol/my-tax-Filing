@@ -1,52 +1,53 @@
-import type { ReactNode } from "react";
-import { Link } from "@tanstack/react-router";
-import FiscalFooter from "@/components/fiscal-landing/FiscalFooter";
+import { useEffect, type ReactNode } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import FiscalNav from "@/components/fiscal-landing/FiscalNav";
+import MobileTopBar from "./MobileTopBar";
+import MobileNav from "./MobileNav";
+import MobileFooter from "./MobileFooter";
+import Footer from "./Footer";
+import { useAuth } from "@/store/auth";
+import { notify } from "@/components/Toaster";
 
 interface AppShellProps {
   children: ReactNode;
+  requireAuth?: boolean;
   hideFooter?: boolean;
 }
 
-const navLinks = [
-  { to: "/taxes", label: "Taxes" },
-  { to: "/e-invoicing", label: "E-Invoicing" },
-  { to: "/rent-receipt", label: "Rent Receipts" },
-  { to: "/document-renewal", label: "Documents" },
-  { to: "/news", label: "News" },
-  { to: "/contact", label: "Contact" },
-] as const;
+export default function AppShell({
+  children,
+  requireAuth = false,
+  hideFooter = false,
+}: AppShellProps) {
+  const user = useAuth((s) => s.user);
+  const navigate = useNavigate();
+  const location = useLocation();
 
-export default function AppShell({ children, hideFooter }: AppShellProps) {
-  return (
-    <div className="min-h-screen" style={{ backgroundColor: "#fcfaf5" }}>
-      <header className="sticky top-0 z-40 border-b border-foreground/10 backdrop-blur" style={{ backgroundColor: "rgba(252,250,245,0.85)" }}>
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-          <Link to="/" className="flex items-center gap-2">
-            <span className="grid h-8 w-8 place-items-center rounded-md bg-primary text-primary-foreground font-serif text-lg">M</span>
-            <span className="font-serif text-lg tracking-tight text-foreground">My Tax Filing</span>
-          </Link>
-          <nav className="hidden items-center gap-7 md:flex">
-            {navLinks.map((l) => (
-              <Link
-                key={l.to}
-                to={l.to}
-                className="text-sm text-foreground/70 transition hover:text-foreground"
-                activeProps={{ className: "text-foreground font-medium" }}
-              >
-                {l.label}
-              </Link>
-            ))}
-          </nav>
-          <div className="flex items-center gap-3">
-            <Link to="/" className="hidden text-sm text-foreground/70 hover:text-foreground sm:block">Sign in</Link>
-            <Link to="/" className="rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90">
-              Get started
-            </Link>
-          </div>
+  useEffect(() => {
+    if (requireAuth && !user) {
+      notify.error("Sign in required", "Please log in to access this page.");
+      navigate(`/customer-dashboard/login?redirect=${encodeURIComponent(location.pathname + location.search)}`);
+    }
+  }, [requireAuth, user, navigate, location.pathname, location.search]);
+
+  if (requireAuth && !user) {
+    return (
+      <div className="min-h-screen grid place-items-center bg-background">
+        <div className="text-center">
+          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Authenticating</p>
+          <p className="mt-2 text-sm text-muted-foreground">Redirecting to sign in…</p>
         </div>
-      </header>
-      {children}
-      {!hideFooter && <FiscalFooter />}
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col relative z-0">
+      <FiscalNav />
+      <MobileTopBar />
+      <main className="flex-1 pb-32 md:pb-0">{children}</main>
+      {!hideFooter && !user && <Footer />}
+      <MobileNav />
     </div>
   );
 }

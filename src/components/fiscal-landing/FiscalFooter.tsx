@@ -1,64 +1,231 @@
-import { Link } from "@tanstack/react-router";
+import { motion, useReducedMotion } from "framer-motion";
+import { Link } from "react-router-dom";
+import { ArrowUp, ChevronRight, Mail, MapPin, Phone } from "lucide-react";
+import FiscalBrand from "./FiscalBrand";
 
-const groups = [
-  {
-    title: "Products",
-    links: [
-      { to: "/taxes", label: "Taxes" },
-      { to: "/e-invoicing", label: "E-Invoicing" },
-      { to: "/rent-receipt", label: "Rent Receipts" },
-      { to: "/document-renewal", label: "Document Renewal" },
-    ],
-  },
-  {
-    title: "Company",
-    links: [
-      { to: "/news", label: "News" },
-      { to: "/contact", label: "Contact" },
-    ],
-  },
-  {
-    title: "Legal",
-    links: [
-      { to: "/legal/terms", label: "Terms" },
-      { to: "/legal/privacy", label: "Privacy" },
-    ],
-  },
-] as const;
+const INK = "#1a3300";
+const CREAM = "#fcfaf5";
+const YELLOW = "#ffe95c";
+const PENCIL = "#b6b6b6";
+
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function rev(rm: boolean, y = 16, delay = 0) {
+  if (rm) return {} as object;
+  return {
+    initial: { opacity: 0, y },
+    whileInView: { opacity: 1, y: 0 },
+    viewport: { once: true, amount: 0.1 },
+    transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] as number[], delay },
+  };
+}
 
 export default function FiscalFooter() {
+  const year = new Date().getFullYear();
+  const rm = Boolean(useReducedMotion());
+
   return (
-    <footer className="border-t border-foreground/10" style={{ backgroundColor: "#f4efe4" }}>
-      <div className="mx-auto grid max-w-7xl gap-10 px-6 py-16 md:grid-cols-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="grid h-8 w-8 place-items-center rounded-md bg-primary text-primary-foreground font-serif text-lg">M</span>
-            <span className="font-serif text-lg text-foreground">My Tax Filing</span>
-          </div>
-          <p className="mt-4 max-w-xs text-sm text-foreground/70">
-            The modern compliance portal for taxes, invoicing and document renewals.
-          </p>
-        </div>
-        {groups.map((g) => (
-          <div key={g.title}>
-            <h4 className="text-xs font-semibold uppercase tracking-widest text-foreground/60">{g.title}</h4>
-            <ul className="mt-4 space-y-3">
-              {g.links.map((l) => (
-                <li key={l.to}>
-                  <Link to={l.to} className="text-sm text-foreground/80 transition hover:text-foreground">
-                    {l.label}
+    <footer
+      className="relative overflow-hidden"
+      style={{ backgroundColor: INK, borderTop: `1px solid ${INK}` }}
+    >
+      <div className="relative max-w-[1200px] mx-auto px-5 md:px-10 pt-16 pb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 md:gap-10 mb-12">
+          {/* ── Brand ── */}
+          <motion.div {...rev(rm, 16, 0)} className="lg:col-span-2 space-y-5">
+            <FiscalBrand />
+            <p
+              className="text-sm leading-relaxed max-w-sm"
+              style={{
+                color: CREAM,
+                opacity: 0.75,
+                fontFamily: "Inter, system-ui, sans-serif",
+                lineHeight: 1.8,
+              }}
+            >
+              Automating tax compliance and document management for the modern
+              Nigerian professional.
+            </p>
+            <div
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium"
+              style={{
+                backgroundColor: YELLOW,
+                color: INK,
+                fontFamily: "'Roboto Mono', monospace",
+              }}
+            >
+              Trusted by 15,000+ Nigerians
+            </div>
+          </motion.div>
+
+          {/* ── Features ── */}
+          <motion.div {...rev(rm, 16, 0.06)}>
+            <h4
+              className="text-xs font-bold mb-5 uppercase tracking-widest"
+              style={{
+                color: CREAM,
+                opacity: 0.35,
+                fontFamily: "'Roboto Mono', monospace",
+              }}
+            >
+              Features
+            </h4>
+            <ul className="space-y-3">
+              {[
+                { to: "/taxes", label: "Personal Tax" },
+                { to: "/taxes", label: "Corporate Filing" },
+                { to: "/rent-receipt", label: "Rent Receipts" },
+                { to: "/document-renewal", label: "Document Renewal" },
+              ].map((l) => (
+                <li key={l.label}>
+                  <Link
+                    to={l.to}
+                    className="group flex items-center gap-1 text-sm py-0.5 opacity-75 hover:opacity-100 transition-opacity duration-200"
+                    style={{
+                      color: CREAM,
+                      fontFamily: "Inter, system-ui, sans-serif",
+                    }}
+                  >
+                    <ChevronRight
+                      className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-all duration-200"
+                      style={{ color: YELLOW }}
+                    />
+                    <span className="group-hover:translate-x-0.5 transition-transform duration-200">
+                      {l.label}
+                    </span>
                   </Link>
                 </li>
               ))}
             </ul>
-          </div>
-        ))}
-      </div>
-      <div className="border-t border-foreground/10">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-6 py-6 text-xs text-foreground/60 md:flex-row">
-          <p>© {new Date().getFullYear()} My Tax Filing. All rights reserved.</p>
-          <p>Built for compliance teams that move fast.</p>
+          </motion.div>
+
+          {/* ── Company ── */}
+          <motion.div {...rev(rm, 16, 0.1)}>
+            <h4
+              className="text-xs font-bold mb-5 uppercase tracking-widest"
+              style={{
+                color: CREAM,
+                opacity: 0.35,
+                fontFamily: "'Roboto Mono', monospace",
+              }}
+            >
+              Company
+            </h4>
+            <ul className="space-y-3">
+              {[
+                { to: "/news", label: "Community Hub" },
+                { to: "/contact", label: "Contact Us" },
+                { to: "/legal/privacy", label: "Privacy Policy" },
+                { to: "/legal/terms", label: "Terms of Service" },
+              ].map((l) => (
+                <li key={l.to}>
+                  <Link
+                    to={l.to}
+                    className="group flex items-center gap-1 text-sm py-0.5 opacity-75 hover:opacity-100 transition-opacity duration-200"
+                    style={{
+                      color: CREAM,
+                      fontFamily: "Inter, system-ui, sans-serif",
+                    }}
+                  >
+                    <ChevronRight
+                      className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-all duration-200"
+                      style={{ color: YELLOW }}
+                    />
+                    <span className="group-hover:translate-x-0.5 transition-transform duration-200">
+                      {l.label}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+
+          {/* ── Contact ── */}
+          <motion.div {...rev(rm, 16, 0.14)}>
+            <h4
+              className="text-xs font-bold mb-5 uppercase tracking-widest"
+              style={{
+                color: CREAM,
+                opacity: 0.35,
+                fontFamily: "'Roboto Mono', monospace",
+              }}
+            >
+              Contact
+            </h4>
+            <ul
+              className="space-y-4 text-sm"
+              style={{
+                color: CREAM,
+                opacity: 0.75,
+                fontFamily: "Inter, system-ui, sans-serif",
+              }}
+            >
+              <li className="flex items-start gap-3">
+                <Mail
+                  className="w-4 h-4 mt-0.5 shrink-0"
+                  style={{ color: YELLOW }}
+                />
+                <span>hello@mytaxfiling.ng</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <Phone
+                  className="w-4 h-4 mt-0.5 shrink-0"
+                  style={{ color: YELLOW }}
+                />
+                <span>+234 (0) 800 TAX HELP</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <MapPin
+                  className="w-4 h-4 mt-0.5 shrink-0"
+                  style={{ color: YELLOW }}
+                />
+                <span>Victoria Island, Lagos</span>
+              </li>
+            </ul>
+          </motion.div>
         </div>
+
+        {/* ── Bottom bar ── */}
+        <motion.div
+          {...rev(rm, 8, 0.1)}
+          className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4"
+          style={{ borderTop: "1px solid rgba(252,250,245,0.10)" }}
+        >
+          <div>
+            <p
+              className="text-xs"
+              style={{
+                color: CREAM,
+                opacity: 0.65,
+                fontFamily: "Inter, system-ui, sans-serif",
+                lineHeight: 1.75,
+              }}
+            >
+              © {year} My Tax Filing. All rights reserved.
+            </p>
+            <p
+              className="text-[10px] uppercase tracking-widest mt-1"
+              style={{
+                color: CREAM,
+                opacity: 0.45,
+                fontFamily: "'Roboto Mono', monospace",
+                letterSpacing: "0.12em",
+              }}
+            >
+              A Product of Nigerian Financial Technologies Ltd.
+            </p>
+          </div>
+          <button
+            onClick={scrollToTop}
+            className="p-2.5 rounded-md transition-all duration-200 hover:-translate-y-0.5 hover:opacity-90 active:scale-[0.95]"
+            aria-label="Back to top"
+            style={{ backgroundColor: YELLOW, border: `1px solid ${YELLOW}` }}
+          >
+            <ArrowUp className="w-4 h-4" style={{ color: INK }} />
+          </button>
+        </motion.div>
       </div>
     </footer>
   );

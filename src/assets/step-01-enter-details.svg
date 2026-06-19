@@ -1,0 +1,27 @@
+<svg viewBox="0 0 400 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="240" fill="#0B1D3A"/>
+  <rect x="20" y="20" width="360" height="200" rx="8" fill="#1A2F52" stroke="#C9A84C" stroke-width="1"/>
+  
+  <!-- Form fields -->
+  <rect x="40" y="50" width="140" height="12" rx="2" fill="#E8C97A" opacity="0.8"/>
+  <rect x="40" y="75" width="200" height="10" rx="2" fill="#C9A84C" opacity="0.3"/>
+  <rect x="40" y="95" width="180" height="10" rx="2" fill="#C9A84C" opacity="0.3"/>
+  <rect x="40" y="115" width="160" height="10" rx="2" fill="#C9A84C" opacity="0.3"/>
+  
+  <!-- Step indicator -->
+  <circle cx="220" cy="60" r="15" fill="#E8C97A"/>
+  <text x="220" y="65" text-anchor="middle" fill="#0B1D3A" font-family="Arial" font-size="12" font-weight="bold">1</text>
+  
+  <!-- User icon -->
+  <circle cx="300" cy="60" r="20" fill="#C9A84C" opacity="0.2"/>
+  <circle cx="300" cy="55" r="6" fill="#E8C97A"/>
+  <path d="M290 70 Q300 65 310 70" fill="#E8C97A"/>
+  
+  <!-- Validation check -->
+  <circle cx="340" cy="140" r="12" fill="#4CAF50"/>
+  <path d="M334 140 L338 144 L346 136" stroke="white" stroke-width="2" fill="none"/>
+  
+  <!-- Text labels -->
+  <text x="40" y="160" fill="#E8C97A" font-family="Arial" font-size="11">Taxpayer Information</text>
+  <text x="40" y="180" fill="#C9A84C" font-family="Arial" font-size="9" opacity="0.7">Live validation active</text>
+</svg>
