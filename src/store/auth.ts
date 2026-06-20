@@ -215,15 +215,15 @@ export const useAuth = create<AuthState>()((set, get) => ({
     if (!u) return;
     const merged = { ...u, ...patch };
     set({ user: merged });
-    const dbPatch: Record<string, unknown> = {};
+    const dbPatch: Record<string, string | string[] | null> = {};
     if (patch.fullName !== undefined) dbPatch.full_name = patch.fullName;
     if (patch.email !== undefined) dbPatch.email = patch.email;
     if (patch.tin !== undefined) dbPatch.tin = patch.tin;
-    if (patch.organization !== undefined) dbPatch.organization = patch.organization;
+    if (patch.organization !== undefined) dbPatch.organization = patch.organization ?? null;
     if (patch.accountType !== undefined) dbPatch.account_type = patch.accountType;
     if (patch.addOns !== undefined) dbPatch.add_ons = patch.addOns;
     if (Object.keys(dbPatch).length) {
-      void supabase.from("profiles").update(dbPatch).eq("id", u.id);
+      void supabase.from("profiles").update(dbPatch as never).eq("id", u.id);
     }
   },
 
