@@ -24,21 +24,17 @@ function ForgotPage() {
     }
   };
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setError("Enter a valid email address.");
       return;
     }
     setError(undefined);
-    const t = requestReset(email);
+    await requestReset(email);
     setSent(true);
-    if (t) {
-      setDemoToken(t);
-      notify.success("Reset link generated", "For demo: continue with the link below.");
-    } else {
-      notify.info("Check your inbox", "If an account exists, a reset link was sent.");
-    }
+    setDemoToken(null);
+    notify.info("Check your inbox", "If an account exists, a reset link was sent.");
   };
 
   return (
