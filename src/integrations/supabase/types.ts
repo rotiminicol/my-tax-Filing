@@ -131,7 +131,14 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
-      subscription_plan: "free" | "starter" | "pro" | "business" | "enterprise"
+      subscription_plan:
+        | "free"
+        | "starter"
+        | "pro"
+        | "business"
+        | "enterprise"
+        | "deluxe"
+        | "premium"
       subscription_status:
         | "active"
         | "trialing"
@@ -266,7 +273,15 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],
-      subscription_plan: ["free", "starter", "pro", "business", "enterprise"],
+      subscription_plan: [
+        "free",
+        "starter",
+        "pro",
+        "business",
+        "enterprise",
+        "deluxe",
+        "premium",
+      ],
       subscription_status: [
         "active",
         "trialing",
