@@ -5,10 +5,12 @@ import { useEffect, useState } from "react";
 export function AuthenticatedLayout() {
   const navigate = useNavigate();
   const user = useAuth((s) => s.user);
+  const loading = useAuth((s) => s.loading);
   const logOut = useAuth((s) => s.logOut);
   const [verified, setVerified] = useState(false);
 
   useEffect(() => {
+    if (loading) return;
     if (!user || user.role !== "user") {
       logOut();
       navigate("/customer-dashboard/login");
@@ -19,7 +21,7 @@ export function AuthenticatedLayout() {
     } else {
       setVerified(true);
     }
-  }, [user, navigate, logOut]);
+  }, [user, loading, navigate, logOut]);
 
   if (!verified) return null;
 
