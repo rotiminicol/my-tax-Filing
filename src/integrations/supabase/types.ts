@@ -16,6 +16,8 @@ export type Database = {
     Tables: {
       profiles: {
         Row: {
+          account_type: string | null
+          add_ons: string[]
           avatar_url: string | null
           business_name: string | null
           created_at: string
@@ -23,11 +25,15 @@ export type Database = {
           full_name: string | null
           id: string
           nin: string | null
+          onboarded: boolean
+          organization: string | null
           phone: string | null
           tin: string | null
           updated_at: string
         }
         Insert: {
+          account_type?: string | null
+          add_ons?: string[]
           avatar_url?: string | null
           business_name?: string | null
           created_at?: string
@@ -35,11 +41,15 @@ export type Database = {
           full_name?: string | null
           id: string
           nin?: string | null
+          onboarded?: boolean
+          organization?: string | null
           phone?: string | null
           tin?: string | null
           updated_at?: string
         }
         Update: {
+          account_type?: string | null
+          add_ons?: string[]
           avatar_url?: string | null
           business_name?: string | null
           created_at?: string
@@ -47,6 +57,8 @@ export type Database = {
           full_name?: string | null
           id?: string
           nin?: string | null
+          onboarded?: boolean
+          organization?: string | null
           phone?: string | null
           tin?: string | null
           updated_at?: string
@@ -55,6 +67,7 @@ export type Database = {
       }
       subscriptions: {
         Row: {
+          billing_cycle: string | null
           cancel_at: string | null
           created_at: string
           current_period_end: string | null
@@ -68,6 +81,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          billing_cycle?: string | null
           cancel_at?: string | null
           created_at?: string
           current_period_end?: string | null
@@ -81,6 +95,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          billing_cycle?: string | null
           cancel_at?: string | null
           created_at?: string
           current_period_end?: string | null
