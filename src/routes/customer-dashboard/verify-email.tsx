@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { CheckCircle, Loader2, Mail, Copy, ArrowRight } from "lucide-react";
+import { CheckCircle, Loader2, Mail, ArrowRight } from "lucide-react";
 import AuthFocusedLayout from "@/components/auth/AuthFocusedLayout";
 import AuthInput from "@/components/auth/AuthInput";
 import { useAuth } from "@/store/auth";
@@ -14,36 +14,44 @@ const MINT = "#d5f5c2";
 function VerifyPage() {
   const navigate = useNavigate();
   const user = useAuth((s) => s.user);
+  const pendingEmail = useAuth((s) => s.pendingVerificationEmail);
   const verifyEmail = useAuth((s) => s.verifyEmail);
+  const resend = useAuth((s) => s.resendVerification);
   const [token, setToken] = useState("");
   const [error, setError] = useState<string | undefined>();
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (!user) navigate("/customer-dashboard/login");
-  }, [user, navigate]);
+    if (!user && !pendingEmail) navigate("/customer-dashboard/login");
+  }, [user, pendingEmail, navigate]);
 
-  if (!user) return null;
+  const displayEmail = user?.email ?? pendingEmail ?? "";
+  if (!user && !pendingEmail) return null;
 
-  const demoToken = user.id.slice(0, 6);
-
-  const copyCode = () => {
-    navigator.clipboard.writeText(demoToken);
-    notify.success("Copied", "Verification code copied to clipboard");
+  const onResend = async () => {
+    try {
+      await resend();
+      notify.success("Code sent", "We sent a new verification code to your email.");
+    } catch {
+      notify.error("Couldn't resend", "Please try again in a moment.");
+    }
   };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
-    if (!verifyEmail(token.trim())) {
+    const ok = await verifyEmail(token.trim());
+    if (!ok) {
       setError("Invalid verification code.");
       setBusy(false);
       return;
     }
+    notify.success("Email verified", "Welcome aboard!");
+    navigate("/customer-dashboard/onboarding");
     setBusy(false);
   };
 
-  if (user.emailVerified) {
+  if (user?.emailVerified) {
     return (
       <AuthFocusedLayout headerVariant="simple" showFooter>
         <div className="flex-grow flex items-center justify-center px-4 py-10">
