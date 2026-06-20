@@ -1,5 +1,6 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { supabase } from "@/integrations/supabase/client";
+import type { Session, User as SupabaseUser } from "@supabase/supabase-js";
 
 export type PlanTier = "free" | "deluxe" | "premium";
 export type AccountType = "individual" | "organization";
@@ -23,21 +24,26 @@ export interface AuthUser {
   addOns: string[];
 }
 
-interface StoredAccount extends AuthUser {
-  passwordHash: string; // simple base64   frontend mock only
-}
-
 interface AuthState {
   user: AuthUser | null;
-  accounts: StoredAccount[];
-  resetTokens: Record<string, string>; // email -> token
-  adminLoggedInInMemory: boolean; // transient memory-only token
-  signUp: (data: { fullName: string; email: string; password: string; plan?: PlanTier; accountType?: AccountType; addOns?: string[] }) => Promise<AuthUser>;
+  session: Session | null;
+  loading: boolean;
+  pendingVerificationEmail: string | null;
+
+  signUp: (data: {
+    fullName: string;
+    email: string;
+    password: string;
+    plan?: PlanTier;
+    accountType?: AccountType;
+    addOns?: string[];
+  }) => Promise<AuthUser>;
   logIn: (email: string, password: string) => Promise<AuthUser>;
-  logOut: () => void;
-  verifyEmail: (token: string) => boolean;
-  requestPasswordReset: (email: string) => string | null;
-  resetPassword: (token: string, newPassword: string) => boolean;
+  logOut: () => Promise<void>;
+  verifyEmail: (token: string) => Promise<boolean>;
+  resendVerification: () => Promise<void>;
+  requestPasswordReset: (email: string) => Promise<string | null>;
+  resetPassword: (token: string, newPassword: string) => Promise<boolean>;
   updateProfile: (patch: Partial<AuthUser>) => void;
   completeOnboarding: () => void;
   setRole: (role: "user" | "admin") => void;
@@ -45,264 +51,267 @@ interface AuthState {
     plan: PlanTier,
     opts?: { accountType?: AccountType; billingCycle?: PlanBillingCycle },
   ) => void;
+  refreshUser: () => Promise<void>;
 }
 
-const hash = (s: string) => {
-  if (typeof window === "undefined") return s;
-  return btoa(unescape(encodeURIComponent(s + "::aurum")));
-};
+async function hydrateUser(sUser: SupabaseUser): Promise<AuthUser> {
+  const [profileRes, subRes, rolesRes] = await Promise.all([
+    supabase.from("profiles").select("*").eq("id", sUser.id).maybeSingle(),
+    supabase.from("subscriptions").select("*").eq("user_id", sUser.id).maybeSingle(),
+    supabase.from("user_roles").select("role").eq("user_id", sUser.id),
+  ]);
 
-export const useAuth = create<AuthState>()(
-  persist(
-    (set, get) => ({
-      user: null,
-      accounts: [
-        {
-          id: "admin-default",
-          fullName: "System Administrator",
-          email: "admin@myrentreceipt.com",
-          emailVerified: true,
-          onboarded: true,
-          role: "admin",
-          createdAt: new Date().toISOString(),
-          passwordHash: "YWRtaW4xMjM6OmF1cnVt", // hash for "admin123"
-          plan: "premium",
-          accountType: "organization",
-          planBillingCycle: "annual",
-          planStartDate: new Date().toISOString(),
-          planExpiresAt: null,
-          addOns: [],
+  const profile = profileRes.data;
+  const sub = subRes.data;
+  const roles = (rolesRes.data ?? []).map((r) => r.role);
+  const role: "user" | "admin" = roles.includes("admin" as never) ? "admin" : "user";
+
+  const planRaw = (sub?.plan as string | undefined) ?? "free";
+  const plan: PlanTier = planRaw === "deluxe" || planRaw === "premium" || planRaw === "free"
+    ? (planRaw as PlanTier)
+    : "free";
+
+  return {
+    id: sUser.id,
+    email: sUser.email ?? profile?.email ?? "",
+    fullName:
+      profile?.full_name ??
+      (sUser.user_metadata?.full_name as string | undefined) ??
+      "",
+    tin: profile?.tin ?? undefined,
+    organization: profile?.organization ?? profile?.business_name ?? undefined,
+    emailVerified: !!sUser.email_confirmed_at,
+    onboarded: !!profile?.onboarded,
+    role,
+    createdAt: sUser.created_at ?? new Date().toISOString(),
+    plan,
+    accountType: (profile?.account_type as AccountType | null) ?? null,
+    planBillingCycle: (sub?.billing_cycle as PlanBillingCycle | null) ?? null,
+    planStartDate: sub?.current_period_start ?? sub?.created_at ?? new Date().toISOString(),
+    planExpiresAt: sub?.current_period_end ?? null,
+    addOns: (profile?.add_ons as string[] | null) ?? [],
+  };
+}
+
+export const useAuth = create<AuthState>()((set, get) => ({
+  user: null,
+  session: null,
+  loading: true,
+  pendingVerificationEmail: null,
+
+  signUp: async ({ fullName, email, password, plan, accountType, addOns }) => {
+    const redirectTo =
+      typeof window !== "undefined"
+        ? `${window.location.origin}/customer-dashboard/verify-email`
+        : undefined;
+    const { data, error } = await supabase.auth.signUp({
+      email: email.trim().toLowerCase(),
+      password,
+      options: {
+        emailRedirectTo: redirectTo,
+        data: {
+          full_name: fullName.trim(),
+          desired_plan: plan ?? null,
+          desired_account_type: accountType ?? null,
+          desired_add_ons: addOns ?? [],
         },
-        {
-          id: "user-default",
-          fullName: "Oluwadurotimi Tenant",
-          email: "user@myrentreceipt.com",
-          emailVerified: true,
-          onboarded: true,
-          role: "user",
-          createdAt: new Date().toISOString(),
-          passwordHash: "dXNlcjEyMzo6YXVydW0=", // hash for "user123"
-          plan: "deluxe",
-          accountType: "individual",
-          planBillingCycle: "monthly",
-          planStartDate: new Date().toISOString(),
-          planExpiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-          addOns: [],
-        }
-      ],
-      resetTokens: {},
-      adminLoggedInInMemory: false,
-
-      signUp: async ({ fullName, email, password, plan, accountType, addOns }) => {
-        const existing = get().accounts.find((a) => a.email.toLowerCase() === email.toLowerCase());
-        if (existing) throw new Error("An account with this email already exists.");
-        const selectedPlan = plan || null;
-        const selectedAccountType = accountType || null;
-        const now = new Date();
-        const acct: StoredAccount = {
-          id: crypto.randomUUID(),
-          fullName: fullName.trim(),
-          email: email.trim().toLowerCase(),
-          emailVerified: false,
-          onboarded: false,
-          role: "user",
-          createdAt: now.toISOString(),
-          passwordHash: hash(password),
-          plan: selectedPlan,
-          accountType: selectedAccountType,
-          planBillingCycle: null,
-          planStartDate: now.toISOString(),
-          planExpiresAt: !selectedPlan || selectedPlan === "free" ? null : new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-          addOns: addOns || [],
-        };
-        set({ accounts: [...get().accounts, acct], user: stripPwd(acct), adminLoggedInInMemory: false });
-        return stripPwd(acct);
       },
+    });
+    if (error) throw new Error(error.message);
+    if (!data.user) throw new Error("Sign-up failed. Please try again.");
 
-      logIn: async (email, password) => {
-        // Hydrate default accounts if missing in localStorage
-        const currentAccounts = get().accounts;
-        const hasAdmin = currentAccounts.some(a => a.email.toLowerCase() === "admin@myrentreceipt.com");
-        const hasUser = currentAccounts.some(a => a.email.toLowerCase() === "user@myrentreceipt.com");
-        
-        let updatedAccounts = [...currentAccounts];
-        if (!hasAdmin) {
-          updatedAccounts.push({
-            id: "admin-default",
-            fullName: "System Administrator",
-            email: "admin@myrentreceipt.com",
-            emailVerified: true,
-            onboarded: true,
-            role: "admin",
-            createdAt: new Date().toISOString(),
-            passwordHash: hash("admin123"),
-            plan: "premium",
-            accountType: "organization",
-            planBillingCycle: "annual",
-            planStartDate: new Date().toISOString(),
-            planExpiresAt: null,
-            addOns: [],
-          });
-        }
-        if (!hasUser) {
-          updatedAccounts.push({
-            id: "user-default",
-            fullName: "Oluwadurotimi Tenant",
-            email: "user@myrentreceipt.com",
-            emailVerified: true,
-            onboarded: true,
-            role: "user",
-            createdAt: new Date().toISOString(),
-            passwordHash: hash("user123"),
-            plan: "deluxe",
-            accountType: "individual",
-            planBillingCycle: "monthly",
-            planStartDate: new Date().toISOString(),
-            planExpiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-            addOns: [],
-          });
-        }
-        
-        if (!hasAdmin || !hasUser) {
-          set({ accounts: updatedAccounts });
-        }
+    set({ pendingVerificationEmail: email.trim().toLowerCase() });
 
-        const acct = updatedAccounts.find((a) => a.email.toLowerCase() === email.toLowerCase());
-        if (!acct) throw new Error("No account found for this email.");
-        if (acct.passwordHash !== hash(password)) throw new Error("Incorrect password.");
-        
-        // Force systemic name updates for the default accounts to prevent browser cache mismatch
-        if (acct.email.toLowerCase() === "admin@myrentreceipt.com") {
-          acct.fullName = "System Administrator";
-          acct.role = "admin";
-        } else {
-          // Self-heal: customer accounts must always have role "user".
-          // Repairs any account corrupted by the old dev "Promote to Admin" toggle.
-          if (acct.role !== "user") {
-            acct.role = "user";
-            set({
-              accounts: get().accounts.map((a) =>
-                a.id === acct.id ? { ...a, role: "user" } : a,
-              ),
-            });
-          }
-        }
-        
-        const u = stripPwd(acct);
-        set({ user: u, adminLoggedInInMemory: u.role === "admin" });
-        return u;
+    // If a session was returned (auto-confirm enabled), hydrate immediately.
+    if (data.session) {
+      const u = await hydrateUser(data.user);
+      set({ user: u, session: data.session });
+      return u;
+    }
+
+    // Return a stub user; the verify page reads pendingVerificationEmail.
+    return {
+      id: data.user.id,
+      email: data.user.email ?? email,
+      fullName: fullName.trim(),
+      emailVerified: false,
+      onboarded: false,
+      role: "user",
+      createdAt: data.user.created_at ?? new Date().toISOString(),
+      plan: plan ?? null,
+      accountType: accountType ?? null,
+      planBillingCycle: null,
+      planStartDate: new Date().toISOString(),
+      planExpiresAt: null,
+      addOns: addOns ?? [],
+    };
+  },
+
+  logIn: async (email, password) => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email.trim().toLowerCase(),
+      password,
+    });
+    if (error) throw new Error(error.message);
+    if (!data.user) throw new Error("No account found for this email.");
+
+    if (!data.user.email_confirmed_at) {
+      set({ pendingVerificationEmail: data.user.email ?? email });
+    }
+
+    const u = await hydrateUser(data.user);
+    set({ user: u, session: data.session });
+    return u;
+  },
+
+  logOut: async () => {
+    await supabase.auth.signOut();
+    set({ user: null, session: null, pendingVerificationEmail: null });
+  },
+
+  verifyEmail: async (token) => {
+    const email = get().pendingVerificationEmail ?? get().user?.email;
+    if (!email) return false;
+    const { data, error } = await supabase.auth.verifyOtp({
+      email,
+      token: token.trim(),
+      type: "signup",
+    });
+    if (error || !data.user) return false;
+    const u = await hydrateUser(data.user);
+    set({ user: u, session: data.session, pendingVerificationEmail: null });
+    return true;
+  },
+
+  resendVerification: async () => {
+    const email = get().pendingVerificationEmail ?? get().user?.email;
+    if (!email) return;
+    await supabase.auth.resend({ type: "signup", email });
+  },
+
+  requestPasswordReset: async (email) => {
+    const redirectTo =
+      typeof window !== "undefined"
+        ? `${window.location.origin}/customer-dashboard/reset-password`
+        : undefined;
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+      redirectTo,
+    });
+    if (error) {
+      // Don't reveal whether the account exists.
+      return null;
+    }
+    return null;
+  },
+
+  resetPassword: async (_token, newPassword) => {
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) return false;
+    return true;
+  },
+
+  updateProfile: (patch) => {
+    const u = get().user;
+    if (!u) return;
+    const merged = { ...u, ...patch };
+    set({ user: merged });
+    const dbPatch: Record<string, unknown> = {};
+    if (patch.fullName !== undefined) dbPatch.full_name = patch.fullName;
+    if (patch.email !== undefined) dbPatch.email = patch.email;
+    if (patch.tin !== undefined) dbPatch.tin = patch.tin;
+    if (patch.organization !== undefined) dbPatch.organization = patch.organization;
+    if (patch.accountType !== undefined) dbPatch.account_type = patch.accountType;
+    if (patch.addOns !== undefined) dbPatch.add_ons = patch.addOns;
+    if (Object.keys(dbPatch).length) {
+      void supabase.from("profiles").update(dbPatch).eq("id", u.id);
+    }
+  },
+
+  completeOnboarding: () => {
+    const u = get().user;
+    if (!u) return;
+    set({ user: { ...u, onboarded: true } });
+    void supabase.from("profiles").update({ onboarded: true }).eq("id", u.id);
+  },
+
+  setRole: (role) => {
+    const u = get().user;
+    if (!u) return;
+    set({ user: { ...u, role } });
+  },
+
+  updatePlan: (plan, opts) => {
+    const u = get().user;
+    if (!u) return;
+    const now = new Date();
+    const billingCycle = opts?.billingCycle ?? u.planBillingCycle ?? "monthly";
+    const cycleMs =
+      billingCycle === "annual" ? 365 * 24 * 60 * 60 * 1000 : 30 * 24 * 60 * 60 * 1000;
+    const expires = plan === "free" ? null : new Date(now.getTime() + cycleMs).toISOString();
+
+    const patch: Partial<AuthUser> = {
+      plan,
+      planBillingCycle: plan === "free" ? null : billingCycle,
+      planStartDate: now.toISOString(),
+      planExpiresAt: expires,
+    };
+    if (opts?.accountType) patch.accountType = opts.accountType;
+
+    set({ user: { ...u, ...patch } });
+
+    void supabase.from("subscriptions").upsert(
+      {
+        user_id: u.id,
+        plan,
+        status: "active",
+        billing_cycle: plan === "free" ? null : billingCycle,
+        current_period_start: now.toISOString(),
+        current_period_end: expires,
       },
+      { onConflict: "user_id" },
+    );
+    if (opts?.accountType) {
+      void supabase.from("profiles").update({ account_type: opts.accountType }).eq("id", u.id);
+    }
+  },
 
-      logOut: () => set({ user: null, adminLoggedInInMemory: false }),
+  refreshUser: async () => {
+    const { data } = await supabase.auth.getUser();
+    if (!data.user) {
+      set({ user: null, session: null, loading: false });
+      return;
+    }
+    const u = await hydrateUser(data.user);
+    set({ user: u, loading: false });
+  },
+}));
 
-      verifyEmail: (token) => {
-        const u = get().user;
-        if (!u) return false;
-        // Token = first 6 chars of user id, mock
-        if (token !== u.id.slice(0, 6)) return false;
-        const updated = { ...u, emailVerified: true };
-        set({
-          user: updated,
-          accounts: get().accounts.map((a) => (a.id === u.id ? { ...a, emailVerified: true } : a)),
-        });
-        return true;
-      },
+// Initialize once on the client.
+if (typeof window !== "undefined") {
+  supabase.auth.getSession().then(async ({ data }) => {
+    if (data.session?.user) {
+      try {
+        const u = await hydrateUser(data.session.user);
+        useAuth.setState({ user: u, session: data.session, loading: false });
+      } catch {
+        useAuth.setState({ loading: false });
+      }
+    } else {
+      useAuth.setState({ loading: false });
+    }
+  });
 
-      requestPasswordReset: (email) => {
-        const acct = get().accounts.find((a) => a.email.toLowerCase() === email.toLowerCase());
-        if (!acct) return null;
-        const token = crypto.randomUUID().slice(0, 8);
-        set({ resetTokens: { ...get().resetTokens, [acct.email]: token } });
-        return token;
-      },
-
-      resetPassword: (token, newPassword) => {
-        const entry = Object.entries(get().resetTokens).find(([, t]) => t === token);
-        if (!entry) return false;
-        const [email] = entry;
-        set({
-          accounts: get().accounts.map((a) =>
-            a.email === email ? { ...a, passwordHash: hash(newPassword) } : a,
-          ),
-          resetTokens: Object.fromEntries(Object.entries(get().resetTokens).filter(([e]) => e !== email)),
-        });
-        return true;
-      },
-
-      updateProfile: (patch) => {
-        const u = get().user;
-        if (!u) return;
-        const merged = { ...u, ...patch };
-        set({
-          user: merged,
-          accounts: get().accounts.map((a) => (a.id === u.id ? { ...a, ...patch } : a)),
-        });
-      },
-
-      completeOnboarding: () => {
-        const u = get().user;
-        if (!u) return;
-        const merged = { ...u, onboarded: true };
-        set({
-          user: merged,
-          accounts: get().accounts.map((a) => (a.id === u.id ? { ...a, onboarded: true } : a)),
-        });
-      },
-
-      setRole: (role) => {
-        const u = get().user;
-        if (!u) return;
-        const merged = { ...u, role };
-        set({
-          user: merged,
-          accounts: get().accounts.map((a) => (a.id === u.id ? { ...a, role } : a)),
-        });
-      },
-
-      updatePlan: (plan, opts) => {
-        const u = get().user;
-        if (!u) return;
-        const now = new Date();
-        const billingCycle = opts?.billingCycle ?? u.planBillingCycle ?? "monthly";
-        const cycleMs =
-          billingCycle === "annual" ? 365 * 24 * 60 * 60 * 1000 : 30 * 24 * 60 * 60 * 1000;
-        const patch: Partial<AuthUser> = {
-          plan,
-          planBillingCycle: plan === "free" ? null : billingCycle,
-          planStartDate: now.toISOString(),
-          planExpiresAt: plan === "free" ? null : new Date(now.getTime() + cycleMs).toISOString(),
-        };
-        if (opts?.accountType) patch.accountType = opts.accountType;
-        const merged = { ...u, ...patch };
-        set({
-          user: merged,
-          accounts: get().accounts.map((a) => (a.id === u.id ? { ...a, ...patch } : a)),
-        });
-      },
-    }),
-    {
-      name: "rr-auth-v1",
-      partialize: (state) => {
-        // Strict Security Boundary: Admin sessions and memory tokens are never written to localStorage
-        if (state.user?.role === "admin") {
-          return {
-            ...state,
-            user: null,
-            adminLoggedInInMemory: false,
-          };
-        }
-        return {
-          ...state,
-          adminLoggedInInMemory: false, // Do not persist the transient memory token
-        };
-      },
-    },
-  ),
-);
-
-function stripPwd(a: StoredAccount): AuthUser {
-  const { passwordHash: _p, ...rest } = a;
-  return rest;
+  supabase.auth.onAuthStateChange((event, session) => {
+    if (event === "SIGNED_OUT" || !session?.user) {
+      useAuth.setState({ user: null, session: null, pendingVerificationEmail: null });
+      return;
+    }
+    if (event === "SIGNED_IN" || event === "USER_UPDATED" || event === "TOKEN_REFRESHED") {
+      hydrateUser(session.user)
+        .then((u) => useAuth.setState({ user: u, session }))
+        .catch(() => useAuth.setState({ session }));
+    }
+  });
 }
 
 export function useRequireAuth() {
@@ -310,7 +319,7 @@ export function useRequireAuth() {
   const user = useAuth.getState().user;
   if (!user) {
     const here = window.location.pathname + window.location.search;
-    window.location.href = `/login?redirect=${encodeURIComponent(here)}`;
+    window.location.href = `/customer-dashboard/login?redirect=${encodeURIComponent(here)}`;
     return null;
   }
   return user;
