@@ -12,4 +12,15 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  vite: {
+    // react-router-dom is used in App.tsx which is loaded client-side via dynamic import.
+    // TanStack Start's SSR pass must be able to resolve it, so we inline it instead of
+    // treating it as an SSR external.
+    ssr: {
+      noExternal: ["react-router-dom", "react-router"],
+    },
+    optimizeDeps: {
+      include: ["react-router-dom", "react-router"],
+    },
+  },
 });
