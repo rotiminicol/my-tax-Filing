@@ -1,0 +1,8 @@
+ALTER TABLE public.profiles
+  ADD COLUMN IF NOT EXISTS onboarded BOOLEAN NOT NULL DEFAULT false,
+  ADD COLUMN IF NOT EXISTS account_type TEXT,
+  ADD COLUMN IF NOT EXISTS add_ons TEXT[] NOT NULL DEFAULT '{}',
+  ADD COLUMN IF NOT EXISTS organization TEXT;
+
+ALTER TABLE public.subscriptions
+  ADD COLUMN IF NOT EXISTS billing_cycle TEXT;

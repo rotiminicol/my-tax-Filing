@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { CheckCircle, Loader2, Mail, Copy, ArrowRight } from "lucide-react";
+import { CheckCircle, Loader2, Mail, ArrowRight } from "lucide-react";
 import AuthFocusedLayout from "@/components/auth/AuthFocusedLayout";
 import AuthInput from "@/components/auth/AuthInput";
 import { useAuth } from "@/store/auth";
@@ -14,36 +14,44 @@ const MINT = "#d5f5c2";
 function VerifyPage() {
   const navigate = useNavigate();
   const user = useAuth((s) => s.user);
+  const pendingEmail = useAuth((s) => s.pendingVerificationEmail);
   const verifyEmail = useAuth((s) => s.verifyEmail);
+  const resend = useAuth((s) => s.resendVerification);
   const [token, setToken] = useState("");
   const [error, setError] = useState<string | undefined>();
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (!user) navigate("/customer-dashboard/login");
-  }, [user, navigate]);
+    if (!user && !pendingEmail) navigate("/customer-dashboard/login");
+  }, [user, pendingEmail, navigate]);
 
-  if (!user) return null;
+  const displayEmail = user?.email ?? pendingEmail ?? "";
+  if (!user && !pendingEmail) return null;
 
-  const demoToken = user.id.slice(0, 6);
-
-  const copyCode = () => {
-    navigator.clipboard.writeText(demoToken);
-    notify.success("Copied", "Verification code copied to clipboard");
+  const onResend = async () => {
+    try {
+      await resend();
+      notify.success("Code sent", "We sent a new verification code to your email.");
+    } catch {
+      notify.error("Couldn't resend", "Please try again in a moment.");
+    }
   };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
-    if (!verifyEmail(token.trim())) {
+    const ok = await verifyEmail(token.trim());
+    if (!ok) {
       setError("Invalid verification code.");
       setBusy(false);
       return;
     }
+    notify.success("Email verified", "Welcome aboard!");
+    navigate("/customer-dashboard/onboarding");
     setBusy(false);
   };
 
-  if (user.emailVerified) {
+  if (user?.emailVerified) {
     return (
       <AuthFocusedLayout headerVariant="simple" showFooter>
         <div className="flex-grow flex items-center justify-center px-4 py-10">
@@ -130,44 +138,19 @@ function VerifyPage() {
               </h1>
               <p className="text-sm font-semibold mt-1.5 leading-relaxed opacity-60" style={{ color: INK }}>
                 We sent a 6-character code to{" "}
-                <span className="font-black opacity-100">{user.email}</span>.
+                <span className="font-black opacity-100">{displayEmail}</span>.
               </p>
             </div>
           </div>
 
-          {/* Demo code strip */}
-          <div
-            className="flex items-center justify-between px-4 py-3 mb-6"
-            style={{
-              backgroundColor: "rgba(26,51,0,0.04)",
-              borderRadius: 8,
-              border: "1.5px solid rgba(26,51,0,0.10)",
-            }}
+          <button
+            type="button"
+            onClick={onResend}
+            className="mb-6 text-[11px] font-black uppercase tracking-[0.15em] hover:opacity-60 transition-opacity self-start"
+            style={{ fontFamily: "'Roboto Mono', monospace", color: INK }}
           >
-            <div>
-              <p
-                className="text-[10px] font-black uppercase tracking-[0.15em] opacity-50 mb-1"
-                style={{ fontFamily: "'Roboto Mono', monospace", color: INK }}
-              >
-                Demo code
-              </p>
-              <p
-                className="font-mono text-lg font-black tracking-[0.3em]"
-                style={{ color: INK }}
-              >
-                {demoToken}
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={copyCode}
-              className="p-2 rounded hover:opacity-60 transition-opacity"
-              style={{ color: INK }}
-              title="Copy code"
-            >
-              <Copy className="w-5 h-5" />
-            </button>
-          </div>
+            Resend code
+          </button>
 
           <form onSubmit={submit} className="flex flex-col gap-5" noValidate>
             <AuthInput

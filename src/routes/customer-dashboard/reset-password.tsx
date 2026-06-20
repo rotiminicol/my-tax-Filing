@@ -1,10 +1,11 @@
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, CheckCircle, Circle, ArrowRight } from "lucide-react";
 import AuthFocusedLayout from "@/components/auth/AuthFocusedLayout";
 import AuthInput from "@/components/auth/AuthInput";
 import { useAuth } from "@/store/auth";
 import { notify } from "@/components/Toaster";
+import { supabase } from "@/integrations/supabase/client";
 
 const INK = "#1a3300";
 const YELLOW = "#ffe95c";
@@ -25,13 +26,29 @@ const BAR_COLORS = ["#ef4444", "#f97316", "#84cc16", INK];
 
 function ResetPage() {
   const navigate = useNavigate();
-  const [_searchParams] = useSearchParams();
-  const token = _searchParams.get("token");
   const reset = useAuth((s) => s.resetPassword);
+  const [canReset, setCanReset] = useState(false);
+  const [checking, setChecking] = useState(true);
   const [pwd, setPwd] = useState("");
   const [confirm, setConfirm] = useState("");
   const [errs, setErrs] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (!mounted) return;
+      setCanReset(!!data.session);
+      setChecking(false);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") setCanReset(true);
+    });
+    return () => {
+      mounted = false;
+      sub.subscription.unsubscribe();
+    };
+  }, []);
 
   const passwordRequirements = [
     { text: "At least 8 characters", met: pwd.length >= 8 },
@@ -55,7 +72,7 @@ function ResetPage() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const next: Record<string, string> = {};
-    if (!token) next.token = "Invalid or missing reset link. Request a new one.";
+    if (!canReset) next.token = "Invalid or missing reset link. Request a new one.";
     if (pwd.length < 8) next.pwd = "Must be at least 8 characters.";
     else if (!/[A-Z]/.test(pwd)) next.pwd = "Must include at least one uppercase letter.";
     else if (!/[a-z]/.test(pwd)) next.pwd = "Must include at least one lowercase letter.";
@@ -66,7 +83,7 @@ function ResetPage() {
     if (Object.keys(next).length) return;
 
     setBusy(true);
-    const ok = reset(token!, pwd);
+    const ok = await reset("", pwd);
     setBusy(false);
     if (!ok) {
       notify.error("Invalid token", "This reset link is invalid or has expired.");
@@ -76,7 +93,7 @@ function ResetPage() {
     navigate("/customer-dashboard/reset-password-success");
   };
 
-  if (!token) {
+  if (!checking && !canReset) {
     return (
       <AuthFocusedLayout headerVariant="reset">
         <div className="flex-grow flex items-center justify-center px-4 py-10">
