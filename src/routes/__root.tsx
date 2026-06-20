@@ -32,16 +32,9 @@ function AppClient() {
 export const Route = createRootRoute({
   shellComponent: RootShell,
   component: () => (
-    <>
-      <ClientOnly fallback={null}>
-        <AppClient />
-      </ClientOnly>
-      <Outlet />
-    </>
-  ),
-  notFoundComponent: () => (
     <ClientOnly fallback={null}>
       <AppClient />
     </ClientOnly>
   ),
+  notFoundComponent: () => null,
 });
