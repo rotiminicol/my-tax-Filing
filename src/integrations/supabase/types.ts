@@ -14,6 +14,269 @@ export type Database = {
   }
   public: {
     Tables: {
+      compliance_documents: {
+        Row: {
+          attachment_name: string | null
+          created_at: string
+          expiry_date: string
+          id: string
+          issue_date: string | null
+          issuer: string | null
+          last_renewed_at: string | null
+          notes: string | null
+          reference: string
+          renewal_status: string
+          title: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attachment_name?: string | null
+          created_at?: string
+          expiry_date: string
+          id?: string
+          issue_date?: string | null
+          issuer?: string | null
+          last_renewed_at?: string | null
+          notes?: string | null
+          reference: string
+          renewal_status?: string
+          title: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          attachment_name?: string | null
+          created_at?: string
+          expiry_date?: string
+          id?: string
+          issue_date?: string | null
+          issuer?: string | null
+          last_renewed_at?: string | null
+          notes?: string | null
+          reference?: string
+          renewal_status?: string
+          title?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      document_reminders: {
+        Row: {
+          auto_renew: boolean
+          created_at: string
+          email_reports: boolean
+          phone: string
+          updated_at: string
+          user_id: string
+          whatsapp: boolean
+        }
+        Insert: {
+          auto_renew?: boolean
+          created_at?: string
+          email_reports?: boolean
+          phone?: string
+          updated_at?: string
+          user_id: string
+          whatsapp?: boolean
+        }
+        Update: {
+          auto_renew?: boolean
+          created_at?: string
+          email_reports?: boolean
+          phone?: string
+          updated_at?: string
+          user_id?: string
+          whatsapp?: boolean
+        }
+        Relationships: []
+      }
+      invoice_activities: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          detail: string
+          id: string
+          invoice_id: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          detail?: string
+          id?: string
+          invoice_id?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          detail?: string
+          id?: string
+          invoice_id?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_activities_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "invoice_clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_activities_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoice_clients: {
+        Row: {
+          address: string | null
+          city: string | null
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      invoice_templates: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          lines: Json
+          name: string
+          updated_at: string
+          usage_count: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string
+          id?: string
+          lines?: Json
+          name: string
+          updated_at?: string
+          usage_count?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          lines?: Json
+          name?: string
+          updated_at?: string
+          usage_count?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      invoices: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          due_date: string
+          id: string
+          invoice_number: string
+          issue_date: string
+          lines: Json
+          notes: string | null
+          paid_at: string | null
+          sent_at: string | null
+          status: string
+          subtotal: number
+          total: number
+          updated_at: string
+          user_id: string
+          vat: number
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          due_date: string
+          id?: string
+          invoice_number: string
+          issue_date?: string
+          lines?: Json
+          notes?: string | null
+          paid_at?: string | null
+          sent_at?: string | null
+          status?: string
+          subtotal?: number
+          total?: number
+          updated_at?: string
+          user_id: string
+          vat?: number
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          due_date?: string
+          id?: string
+          invoice_number?: string
+          issue_date?: string
+          lines?: Json
+          notes?: string | null
+          paid_at?: string | null
+          sent_at?: string | null
+          status?: string
+          subtotal?: number
+          total?: number
+          updated_at?: string
+          user_id?: string
+          vat?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "invoice_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           account_type: string | null
@@ -62,6 +325,54 @@ export type Database = {
           phone?: string | null
           tin?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      receipts: {
+        Row: {
+          certified_date: string | null
+          created_at: string
+          declaration: boolean
+          employer: Json
+          id: string
+          landlord: Json
+          sig_mode: string | null
+          signature_data: string | null
+          status: string
+          taxpayer: Json
+          typed_signature: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          certified_date?: string | null
+          created_at?: string
+          declaration?: boolean
+          employer?: Json
+          id?: string
+          landlord?: Json
+          sig_mode?: string | null
+          signature_data?: string | null
+          status?: string
+          taxpayer?: Json
+          typed_signature?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          certified_date?: string | null
+          created_at?: string
+          declaration?: boolean
+          employer?: Json
+          id?: string
+          landlord?: Json
+          sig_mode?: string | null
+          signature_data?: string | null
+          status?: string
+          taxpayer?: Json
+          typed_signature?: string | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
