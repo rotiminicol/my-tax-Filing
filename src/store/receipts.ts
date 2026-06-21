@@ -34,7 +34,7 @@ function rowToReceipt(row: Record<string, unknown>): Receipt {
 
 async function pushReceipt(r: Receipt, userId: string) {
   if (!isUuid(r.id)) return;
-  await supabase.from("receipts" as never).upsert({
+  await supabase.from("receipts").upsert({
     id: r.id,
     user_id: userId,
     status: r.status,
@@ -65,13 +65,13 @@ export const useReceiptsStore = create<State>()((set, get) => ({
     set((s) => ({ receipts: s.receipts.filter((r) => r.id !== id) }));
     emitAppNotification({ level: "info", title: "Receipt removed", description: "Receipt removed from your dashboard." });
     const uid = currentUserId();
-    if (uid && isUuid(id)) void supabase.from("receipts" as never).delete().eq("id", id);
+    if (uid && isUuid(id)) void supabase.from("receipts").delete().eq("id", id);
   },
   clear: () => set({ receipts: [] }),
   get: (id) => get().receipts.find((r) => r.id === id),
   hydrate: async (userId) => {
     const { data, error } = await supabase
-      .from("receipts" as never)
+      .from("receipts")
       .select("*")
       .eq("user_id", userId)
       .order("created_at", { ascending: false });

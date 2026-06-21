@@ -79,7 +79,7 @@ function rowToDoc(row: Record<string, unknown>): ComplianceDocument {
 
 async function pushDoc(d: ComplianceDocument, userId: string) {
   if (!isUuid(d.id)) return;
-  await supabase.from("compliance_documents" as never).upsert({
+  await supabase.from("compliance_documents").upsert({
     id: d.id,
     user_id: userId,
     type: d.type,
@@ -132,7 +132,7 @@ export const useDocumentsStore = create<DocumentsState>()((set, get) => ({
       removeDocument: (id) => {
         set((s) => ({ documents: s.documents.filter((d) => d.id !== id) }));
         emitAppNotification({ level: "info", title: "Document removed", description: "Document removed from tracking." });
-        if (_userId && isUuid(id)) void supabase.from("compliance_documents" as never).delete().eq("id", id);
+        if (_userId && isUuid(id)) void supabase.from("compliance_documents").delete().eq("id", id);
       },
 
       getDocument: (id) => get().documents.find((d) => d.id === id),
@@ -156,7 +156,7 @@ export const useDocumentsStore = create<DocumentsState>()((set, get) => ({
         set((s) => ({ reminders: { ...s.reminders, ...patch } }));
         const next = get().reminders;
         if (_userId) {
-          void supabase.from("document_reminders" as never).upsert({
+          void supabase.from("document_reminders").upsert({
             user_id: _userId,
             whatsapp: next.whatsapp,
             email_reports: next.emailReports,
@@ -171,8 +171,8 @@ export const useDocumentsStore = create<DocumentsState>()((set, get) => ({
 
 async function hydrateDocuments(userId: string) {
   const [docs, rem] = await Promise.all([
-    supabase.from("compliance_documents" as never).select("*").eq("user_id", userId).order("expiry_date", { ascending: true }),
-    supabase.from("document_reminders" as never).select("*").eq("user_id", userId).maybeSingle(),
+    supabase.from("compliance_documents").select("*").eq("user_id", userId).order("expiry_date", { ascending: true }),
+    supabase.from("document_reminders").select("*").eq("user_id", userId).maybeSingle(),
   ]);
   if (docs.data) {
     useDocumentsStore.setState({

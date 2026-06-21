@@ -118,7 +118,7 @@ let _userId: string | null = null;
 
 async function pushClient(c: InvoiceClient) {
   if (!_userId || !isUuid(c.id)) return;
-  await supabase.from("invoice_clients" as never).upsert({
+  await supabase.from("invoice_clients").upsert({
     id: c.id, user_id: _userId, name: c.name,
     email: c.email ?? null, phone: c.phone ?? null,
     address: c.address ?? null, city: c.city ?? null,
@@ -126,7 +126,7 @@ async function pushClient(c: InvoiceClient) {
 }
 async function pushInvoice(i: Invoice) {
   if (!_userId || !isUuid(i.id)) return;
-  await supabase.from("invoices" as never).upsert({
+  await supabase.from("invoices").upsert({
     id: i.id, user_id: _userId,
     client_id: i.clientId && isUuid(i.clientId) ? i.clientId : null,
     invoice_number: i.invoiceNumber, status: i.status,
@@ -138,14 +138,14 @@ async function pushInvoice(i: Invoice) {
 }
 async function pushTemplate(t: InvoiceTemplate) {
   if (!_userId || !isUuid(t.id)) return;
-  await supabase.from("invoice_templates" as never).upsert({
+  await supabase.from("invoice_templates").upsert({
     id: t.id, user_id: _userId, name: t.name,
     description: t.description, lines: t.lines, usage_count: t.usageCount,
   } as never);
 }
 async function pushActivity(a: InvoiceActivity) {
   if (!_userId || !isUuid(a.id)) return;
-  await supabase.from("invoice_activities" as never).insert({
+  await supabase.from("invoice_activities").insert({
     id: a.id, user_id: _userId,
     invoice_id: a.invoiceId && isUuid(a.invoiceId) ? a.invoiceId : null,
     client_id: a.clientId && isUuid(a.clientId) ? a.clientId : null,
@@ -183,7 +183,7 @@ export const useInvoicingStore = create<InvoicingState>()((set, get) => ({
           clients: s.clients.filter((c) => c.id !== id),
           invoices: s.invoices.filter((inv) => inv.clientId !== id),
         }));
-        if (isUuid(id)) void supabase.from("invoice_clients" as never).delete().eq("id", id);
+        if (isUuid(id)) void supabase.from("invoice_clients").delete().eq("id", id);
       },
 
       getClient: (id) => get().clients.find((c) => c.id === id),
@@ -254,7 +254,7 @@ export const useInvoicingStore = create<InvoicingState>()((set, get) => ({
         set((s) => ({
           invoices: s.invoices.filter((inv) => inv.id !== id),
         }));
-        if (isUuid(id)) void supabase.from("invoices" as never).delete().eq("id", id);
+        if (isUuid(id)) void supabase.from("invoices").delete().eq("id", id);
       },
 
       getInvoice: (id) => get().invoices.find((inv) => inv.id === id),
@@ -352,7 +352,7 @@ export const useInvoicingStore = create<InvoicingState>()((set, get) => ({
         set((s) => ({
           templates: s.templates.filter((t) => t.id !== id),
         }));
-        if (isUuid(id)) void supabase.from("invoice_templates" as never).delete().eq("id", id);
+        if (isUuid(id)) void supabase.from("invoice_templates").delete().eq("id", id);
       },
 
       incrementTemplateUsage: (id) => {
@@ -396,10 +396,10 @@ export const useInvoicingStore = create<InvoicingState>()((set, get) => ({
 
       hydrate: async (userId) => {
         const [c, i, t, a] = await Promise.all([
-          supabase.from("invoice_clients" as never).select("*").eq("user_id", userId).order("created_at", { ascending: false }),
-          supabase.from("invoices" as never).select("*").eq("user_id", userId).order("created_at", { ascending: false }),
-          supabase.from("invoice_templates" as never).select("*").eq("user_id", userId).order("created_at", { ascending: false }),
-          supabase.from("invoice_activities" as never).select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(50),
+          supabase.from("invoice_clients").select("*").eq("user_id", userId).order("created_at", { ascending: false }),
+          supabase.from("invoices").select("*").eq("user_id", userId).order("created_at", { ascending: false }),
+          supabase.from("invoice_templates").select("*").eq("user_id", userId).order("created_at", { ascending: false }),
+          supabase.from("invoice_activities").select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(50),
         ]);
         const clients: InvoiceClient[] = ((c.data ?? []) as unknown as Record<string, unknown>[]).map((r) => ({
           id: r.id as string, name: r.name as string,
