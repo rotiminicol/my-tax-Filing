@@ -1,30 +1,67 @@
 
+import { useEffect, useState } from "react";
 import AdminShell from "@/components/layout/AdminShell";
 import { Users, FileText, DollarSign, Activity, TrendingUp, AlertCircle, ArrowUpRight } from "lucide-react";
+import {
+  fetchAdminProfiles,
+  fetchAdminReceipts,
+  fetchAdminSubscriptions,
+  type AdminProfileRow,
+  type AdminReceiptRow,
+  type AdminSubRow,
+} from "@/lib/adminData";
+import { formatNaira } from "@/lib/rr/format";
 
-const KPIS = [
-  { label: "Total Users", value: "12,847", delta: "+8.2%", icon: Users, accent: "bg-blue-50 text-blue-600" },
-  { label: "Receipts This Month", value: "3,612", delta: "+24.6%", icon: FileText, accent: "bg-emerald-50 text-emerald-600" },
-  { label: "Monthly Revenue", value: "₦18.4M", delta: "+12.1%", icon: DollarSign, accent: "bg-amber-50 text-amber-600" },
-  { label: "Open Tickets", value: "23", delta: "-4", icon: AlertCircle, accent: "bg-red-50 text-red-600" },
-];
+const PLAN_PRICES: Record<string, number> = { free: 0, deluxe: 12500, premium: 45000 };
 
-const RECENT_USERS = [
-  { name: "Adaeze Okafor", email: "adaeze@firm.com", plan: "Pro", joined: "2 min ago" },
-  { name: "Tunde Bakare", email: "tunde@startup.io", plan: "Free", joined: "14 min ago" },
-  { name: "Zainab Yusuf", email: "z.yusuf@gov.ng", plan: "Enterprise", joined: "1 hr ago" },
-  { name: "Chinedu Eze", email: "chinedu@law.ng", plan: "Pro", joined: "3 hrs ago" },
-  { name: "Funke Adebayo", email: "funke@retail.ng", plan: "Free", joined: "5 hrs ago" },
-];
-
-const RECENT_RECEIPTS = [
-  { id: "RR-8421", tenant: "Adaeze O.", amount: "₦2,400,000", status: "Approved" },
-  { id: "RR-8420", tenant: "Tunde B.", amount: "₦1,800,000", status: "Pending" },
-  { id: "RR-8419", tenant: "Zainab Y.", amount: "₦4,500,000", status: "Approved" },
-  { id: "RR-8418", tenant: "Chinedu E.", amount: "₦3,200,000", status: "Flagged" },
-];
+function timeAgo(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return "just now";
+  if (m < 60) return `${m} min ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h} hr ago`;
+  const d = Math.floor(h / 24);
+  return `${d}d ago`;
+}
 
 function AdminOverview() {
+  const [profiles, setProfiles] = useState<AdminProfileRow[]>([]);
+  const [subs, setSubs] = useState<AdminSubRow[]>([]);
+  const [receipts, setReceipts] = useState<AdminReceiptRow[]>([]);
+
+  useEffect(() => {
+    void Promise.all([fetchAdminProfiles(), fetchAdminSubscriptions(), fetchAdminReceipts()])
+      .then(([p, s, r]) => { setProfiles(p); setSubs(s); setReceipts(r); })
+      .catch(() => {});
+  }, []);
+
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+  const receiptsThisMonth = receipts.filter(r => new Date(r.created_at).getTime() >= monthStart).length;
+  const mrr = subs.reduce((sum, s) => sum + (s.status === "active" ? (PLAN_PRICES[s.plan] ?? 0) : 0), 0);
+  const pendingReceipts = receipts.filter(r => r.status !== "certified" && r.status !== "approved").length;
+
+  const KPIS = [
+    { label: "Total Users", value: profiles.length.toLocaleString(), delta: `${profiles.length}`, icon: Users, accent: "bg-blue-50 text-blue-600" },
+    { label: "Receipts This Month", value: receiptsThisMonth.toLocaleString(), delta: `${receipts.length} total`, icon: FileText, accent: "bg-emerald-50 text-emerald-600" },
+    { label: "Monthly Revenue", value: formatNaira(mrr), delta: "MRR", icon: DollarSign, accent: "bg-amber-50 text-amber-600" },
+    { label: "Pending Receipts", value: pendingReceipts.toLocaleString(), delta: "review", icon: AlertCircle, accent: "bg-red-50 text-red-600" },
+  ];
+
+  const subByUser = new Map(subs.map(s => [s.user_id, s.plan]));
+  const RECENT_USERS = profiles.slice(0, 5).map(p => ({
+    name: p.full_name || p.email,
+    email: p.email,
+    plan: (subByUser.get(p.id) ?? "free") as string,
+    joined: timeAgo(p.created_at),
+  }));
+  const RECENT_RECEIPTS = receipts.slice(0, 4).map(r => ({
+    id: r.id.slice(0, 8).toUpperCase(),
+    tenant: r.taxpayer?.fullName ?? "—",
+    amount: formatNaira(Number(r.taxpayer?.amount ?? 0)),
+    status: r.status === "certified" ? "Approved" : r.status === "draft" ? "Pending" : r.status,
+  }));
   return (
     <AdminShell title="Overview">
       <div className="flex flex-col gap-8 lg:gap-10">
@@ -81,8 +118,8 @@ function AdminOverview() {
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
                     <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-md ${
-                      u.plan === "Enterprise" ? "bg-purple-50 text-purple-700"
-                      : u.plan === "Pro" ? "bg-amber-50 text-amber-700"
+                      u.plan === "premium" ? "bg-purple-50 text-purple-700"
+                      : u.plan === "deluxe" ? "bg-amber-50 text-amber-700"
                       : "bg-gray-100 text-gray-600"
                     }`}>{u.plan}</span>
                     <span className="text-xs text-gray-400 font-medium">{u.joined}</span>

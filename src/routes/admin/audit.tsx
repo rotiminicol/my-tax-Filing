@@ -1,19 +1,17 @@
 
+import { useEffect, useState } from "react";
 import AdminShell from "@/components/layout/AdminShell";
 import { Activity, AlertTriangle, CheckCircle2, Info } from "lucide-react";
+import { fetchAuditLog, fetchAdminProfiles } from "@/lib/adminData";
 
 interface Entry { id: string; at: string; actor: string; action: string; resource: string; severity: "info" | "warning" | "success" | "error"; }
 
-const LOG: Entry[] = [
-  { id: "1", at: "10:42:18", actor: "system", action: "Tax-office data refresh completed", resource: "tax_offices/fct", severity: "success" },
-  { id: "2", at: "10:31:02", actor: "admin@myrentreceipt.com", action: "Suspended user account", resource: "users/u_004", severity: "warning" },
-  { id: "3", at: "09:58:44", actor: "zainab@gov.ng", action: "Generated receipt", resource: "receipts/RR-8421", severity: "info" },
-  { id: "4", at: "09:30:11", actor: "system", action: "Failed webhook delivery to Slack", resource: "integrations/slack", severity: "error" },
-  { id: "5", at: "09:12:50", actor: "admin@myrentreceipt.com", action: "Updated feature flag", resource: "flags/batch_v2", severity: "info" },
-  { id: "6", at: "08:45:09", actor: "system", action: "Nightly backup completed", resource: "db/main", severity: "success" },
-  { id: "7", at: "08:21:33", actor: "tunde@startup.io", action: "Password reset requested", resource: "auth/reset", severity: "info" },
-  { id: "8", at: "07:55:01", actor: "system", action: "Rate limit triggered", resource: "api/public/receipts", severity: "warning" },
-];
+function severityFor(action: string): Entry["severity"] {
+  if (action.includes("delete") || action.includes("suspend")) return "warning";
+  if (action.includes("promote") || action.includes("approved")) return "success";
+  if (action.includes("fail") || action.includes("error")) return "error";
+  return "info";
+}
 
 const iconFor = (s: Entry["severity"]) => ({
   info: <Info className="w-4 h-4 text-slate-500" />,
@@ -23,6 +21,20 @@ const iconFor = (s: Entry["severity"]) => ({
 }[s]);
 
 function AdminAudit() {
+  const [LOG, setLog] = useState<Entry[]>([]);
+  useEffect(() => {
+    void Promise.all([fetchAuditLog(), fetchAdminProfiles()]).then(([rows, profiles]) => {
+      const byId = new Map(profiles.map(p => [p.id, p.email]));
+      setLog(rows.map(r => ({
+        id: r.id,
+        at: new Date(r.created_at).toLocaleString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
+        actor: byId.get(r.admin_id) ?? r.admin_id.slice(0, 8),
+        action: r.action.replace(/_/g, " "),
+        resource: r.target_user_id ? `users/${r.target_user_id.slice(0, 8)}` : "system",
+        severity: severityFor(r.action),
+      })));
+    }).catch(() => {});
+  }, []);
   return (
     <AdminShell title="Audit Log">
       <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden">

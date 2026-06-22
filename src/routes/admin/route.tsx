@@ -1,31 +1,33 @@
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useAdminAuth } from "@/store/adminAuth";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 export function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const user = useAdminAuth((s) => s.adminUser);
+  const loading = useAdminAuth((s) => s.loading);
   const adminAuthenticated = useAdminAuth((s) => s.adminLoggedInInMemory);
-  const logOut = useAdminAuth((s) => s.logOutAdmin);
-  const [verified, setVerified] = useState(false);
 
   const isLoginPage = location.pathname === "/admin/login";
 
   useEffect(() => {
-    if (isLoginPage) {
-      setVerified(true);
-      return;
-    }
-    if (!user || user.role !== "admin" || !adminAuthenticated) {
-      logOut();
+    if (isLoginPage || loading) return;
+    if (!user || !adminAuthenticated) {
       navigate("/admin/login");
-    } else {
-      setVerified(true);
     }
-  }, [user, adminAuthenticated, navigate, logOut, isLoginPage]);
+  }, [user, adminAuthenticated, loading, navigate, isLoginPage]);
 
-  if (!verified && !isLoginPage) return null;
+  if (loading && !isLoginPage) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#fafafa]">
+        <div className="text-sm font-bold tracking-wider uppercase text-gray-400">
+          Verifying session…
+        </div>
+      </div>
+    );
+  }
+  if (!isLoginPage && (!user || !adminAuthenticated)) return null;
 
   return <Outlet />;
 }
