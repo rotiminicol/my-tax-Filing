@@ -12,6 +12,9 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  nitro: {
+    preset: "vercel",
+  },
   vite: {
     // react-router-dom is used in App.tsx which is loaded client-side via dynamic import.
     // TanStack Start's SSR pass must be able to resolve it, so we inline it instead of
