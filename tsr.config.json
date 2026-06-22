@@ -1,0 +1,3 @@
+{
+  "routeFileIgnorePattern": "^(admin|customer-dashboard|_landing-page|500)"
+}
