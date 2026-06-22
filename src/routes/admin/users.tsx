@@ -1,24 +1,61 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AdminShell from "@/components/layout/AdminShell";
 import { Search, MoreVertical, Shield, UserX, KeyRound } from "lucide-react";
+import {
+  fetchAdminProfiles,
+  fetchAdminSubscriptions,
+  fetchAdminRoles,
+  fetchAdminReceipts,
+  promoteUserToAdmin,
+  demoteUserFromAdmin,
+} from "@/lib/adminData";
+import { notify } from "@/components/Toaster";
 
-interface Row { id: string; name: string; email: string; plan: "Free" | "Pro" | "Enterprise"; receipts: number; joined: string; role: "user" | "admin"; status: "active" | "suspended"; }
-
-const SEED: Row[] = [
-  { id: "u_001", name: "Adaeze Okafor", email: "adaeze@firm.com", plan: "Pro", receipts: 28, joined: "12 Jan 2026", role: "user", status: "active" },
-  { id: "u_002", name: "Tunde Bakare", email: "tunde@startup.io", plan: "Free", receipts: 4, joined: "03 Feb 2026", role: "user", status: "active" },
-  { id: "u_003", name: "Zainab Yusuf", email: "z.yusuf@gov.ng", plan: "Enterprise", receipts: 142, joined: "29 Nov 2025", role: "admin", status: "active" },
-  { id: "u_004", name: "Chinedu Eze", email: "chinedu@law.ng", plan: "Pro", receipts: 56, joined: "18 Mar 2026", role: "user", status: "suspended" },
-  { id: "u_005", name: "Funke Adebayo", email: "funke@retail.ng", plan: "Free", receipts: 1, joined: "02 May 2026", role: "user", status: "active" },
-  { id: "u_006", name: "Ibrahim Musa", email: "ibrahim.m@oilco.ng", plan: "Enterprise", receipts: 233, joined: "01 Sep 2025", role: "user", status: "active" },
-  { id: "u_007", name: "Ngozi Bello", email: "ngozi@consult.com", plan: "Pro", receipts: 19, joined: "11 Apr 2026", role: "user", status: "active" },
-];
+interface Row { id: string; name: string; email: string; plan: string; receipts: number; joined: string; role: "user" | "admin"; status: "active" | "suspended"; }
 
 function AdminUsers() {
   const [q, setQ] = useState("");
   const [openMenu, setOpenMenu] = useState<string | null>(null);
-  const rows = SEED.filter(r => !q || r.name.toLowerCase().includes(q.toLowerCase()) || r.email.toLowerCase().includes(q.toLowerCase()));
+  const [rowsAll, setRowsAll] = useState<Row[]>([]);
+
+  const load = async () => {
+    try {
+      const [profiles, subs, roles, receipts] = await Promise.all([
+        fetchAdminProfiles(), fetchAdminSubscriptions(), fetchAdminRoles(), fetchAdminReceipts(),
+      ]);
+      const subMap = new Map(subs.map(s => [s.user_id, s.plan]));
+      const adminSet = new Set(roles.filter(r => r.role === "admin").map(r => r.user_id));
+      const receiptCount = new Map<string, number>();
+      for (const r of receipts) receiptCount.set(r.user_id, (receiptCount.get(r.user_id) ?? 0) + 1);
+      setRowsAll(profiles.map(p => ({
+        id: p.id,
+        name: p.full_name || p.email,
+        email: p.email,
+        plan: (subMap.get(p.id) ?? "free"),
+        receipts: receiptCount.get(p.id) ?? 0,
+        joined: new Date(p.created_at).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
+        role: adminSet.has(p.id) ? "admin" : "user",
+        status: "active",
+      })));
+    } catch (e) {
+      notify.error("Failed to load users", e instanceof Error ? e.message : "Please try again.");
+    }
+  };
+
+  useEffect(() => { void load(); }, []);
+
+  const handlePromote = async (id: string) => {
+    try { await promoteUserToAdmin(id); notify.success("Promoted", "User is now an admin."); setOpenMenu(null); await load(); }
+    catch (e) { notify.error("Failed", e instanceof Error ? e.message : ""); }
+  };
+  const handleDemote = async (id: string) => {
+    try { await demoteUserFromAdmin(id); notify.success("Demoted", "Admin role removed."); setOpenMenu(null); await load(); }
+    catch (e) { notify.error("Failed", e instanceof Error ? e.message : ""); }
+  };
+
+  const rows = rowsAll.filter(r => !q || r.name.toLowerCase().includes(q.toLowerCase()) || r.email.toLowerCase().includes(q.toLowerCase()));
+  const SEED = rowsAll;
 
   return (
     <AdminShell title="Users">
@@ -87,7 +124,11 @@ function AdminUsers() {
                     </button>
                     {openMenu === r.id && (
                       <div className="absolute right-4 top-full mt-1 z-10 w-52 bg-white border border-gray-100 rounded-xl shadow-xl py-1 text-left">
-                        <button className="w-full px-4 py-2.5 text-sm font-bold hover:bg-gray-50 flex items-center gap-2"><Shield className="w-4 h-4" /> Promote to admin</button>
+                        {r.role === "admin" ? (
+                          <button onClick={() => handleDemote(r.id)} className="w-full px-4 py-2.5 text-sm font-bold hover:bg-gray-50 flex items-center gap-2"><Shield className="w-4 h-4" /> Remove admin</button>
+                        ) : (
+                          <button onClick={() => handlePromote(r.id)} className="w-full px-4 py-2.5 text-sm font-bold hover:bg-gray-50 flex items-center gap-2"><Shield className="w-4 h-4" /> Promote to admin</button>
+                        )}
                         <button className="w-full px-4 py-2.5 text-sm font-bold hover:bg-gray-50 flex items-center gap-2"><KeyRound className="w-4 h-4" /> Reset password</button>
                         <button className="w-full px-4 py-2.5 text-sm font-bold hover:bg-red-50 text-red-600 flex items-center gap-2"><UserX className="w-4 h-4" /> Suspend account</button>
                       </div>
