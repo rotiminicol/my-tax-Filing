@@ -1,23 +1,37 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AdminShell from "@/components/layout/AdminShell";
 import { Search, Download, Filter } from "lucide-react";
 import { formatNaira } from "@/lib/rr/format";
+import { fetchAdminReceipts } from "@/lib/adminData";
 
 interface Row { id: string; taxpayer: string; landlord: string; amount: number; date: string; status: "Approved" | "Pending" | "Flagged" | "Rejected"; }
 
-const DATA: Row[] = Array.from({ length: 18 }, (_, i) => ({
-  id: `RR-${8500 - i}`,
-  taxpayer: ["Adaeze Okafor","Tunde Bakare","Zainab Yusuf","Chinedu Eze","Funke Adebayo","Ibrahim Musa"][i % 6],
-  landlord: ["Lekki Estates","Maitama Holdings","Garki Group","Wuse Properties"][i % 4],
-  amount: 800000 + ((i * 137_000) % 4_500_000),
-  date: `${(i % 28) + 1} ${["Jan","Feb","Mar","Apr","May"][i % 5]} 2026`,
-  status: (["Approved","Pending","Flagged","Rejected"] as const)[i % 4],
-}));
+function mapStatus(s: string): Row["status"] {
+  if (s === "certified" || s === "approved") return "Approved";
+  if (s === "draft" || s === "pending") return "Pending";
+  if (s === "rejected") return "Rejected";
+  return "Flagged";
+}
 
 function AdminReceipts() {
   const [q, setQ] = useState("");
   const [status, setStatus] = useState<string>("All");
+  const [DATA, setData] = useState<Row[]>([]);
+
+  useEffect(() => {
+    void fetchAdminReceipts().then(rows => {
+      setData(rows.map(r => ({
+        id: r.id.slice(0, 8).toUpperCase(),
+        taxpayer: r.taxpayer?.fullName ?? "—",
+        landlord: r.landlord?.name ?? "—",
+        amount: Number(r.taxpayer?.amount ?? 0),
+        date: new Date(r.certified_date ?? r.created_at).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
+        status: mapStatus(r.status),
+      })));
+    }).catch(() => {});
+  }, []);
+
   const rows = DATA.filter(r =>
     (status === "All" || r.status === status) &&
     (!q || r.id.toLowerCase().includes(q.toLowerCase()) || r.taxpayer.toLowerCase().includes(q.toLowerCase()))
