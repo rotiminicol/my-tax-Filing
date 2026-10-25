@@ -166,19 +166,6 @@ export default function RentReliefPageContent() {
       >
         <div className="max-w-[1200px] mx-auto px-5 md:px-10">
           <div className="max-w-3xl space-y-6">
-            <motion.div
-              {...rev(rm, 12, 0)}
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold"
-              style={{
-                backgroundColor: YELLOW,
-                color: INK,
-                fontFamily: "'Roboto Mono', monospace",
-                letterSpacing: "0.08em",
-                border: "1px solid rgba(26,51,0,0.14)",
-              }}
-            >
-              NIGERIA TAX ACT 2025 · TENANT RELIEF
-            </motion.div>
 
             <motion.h1
               {...rev(rm, 20, 0.08)}

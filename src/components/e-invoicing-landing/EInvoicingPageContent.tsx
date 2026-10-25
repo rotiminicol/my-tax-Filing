@@ -178,19 +178,6 @@ export default function EInvoicingPageContent() {
         <div className="max-w-[1200px] mx-auto px-5 md:px-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             <div className="lg:col-span-7 space-y-6">
-              <motion.div
-                {...rev(rm, 12, 0)}
-                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold"
-                style={{
-                  backgroundColor: YELLOW,
-                  color: INK,
-                  fontFamily: "'Roboto Mono', monospace",
-                  letterSpacing: "0.08em",
-                  border: "1px solid rgba(26,51,0,0.14)",
-                }}
-              >
-                NRS MERCHANT BUYER SOLUTION (MBS)
-              </motion.div>
 
               <motion.h1
                 {...rev(rm, 20, 0.08)}

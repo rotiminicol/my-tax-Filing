@@ -81,13 +81,6 @@ export default function ContactPageContent() {
           headerRef.isVisible ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"
         }`}
       >
-        <div
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border text-xs font-bold uppercase tracking-wide mb-6"
-          style={{ borderColor: SB.cardBorder, color: SB.ink, backgroundColor: SB.yellow }}
-        >
-          <Headphones className="w-4 h-4" />
-          NIGERIA TAX SPECIALISTS
-        </div>
         <h1 className="text-4xl md:text-6xl font-extrabold mb-4" style={{ color: SB.ink, fontFamily: "'Bricolage Grotesque', sans-serif" }}>
           Contact us
         </h1>

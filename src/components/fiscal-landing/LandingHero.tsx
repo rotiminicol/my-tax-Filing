@@ -67,21 +67,6 @@ export default function LandingHero() {
         }}
       />
 
-      {/* Eyebrow */}
-      <motion.div
-        {...ent(0.04, 12)}
-        className="relative z-10 inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold mb-6"
-        style={{
-          backgroundColor: YELLOW,
-          color: INK,
-          fontFamily: "'Roboto Mono', monospace",
-          letterSpacing: "0.08em",
-          border: "1px solid rgba(26,51,0,0.14)",
-        }}
-      >
-        <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: INK }} />
-        NIGERIA TAX COMPLIANCE, SIMPLIFIED
-      </motion.div>
 
       {/* Headline */}
       <motion.h1
