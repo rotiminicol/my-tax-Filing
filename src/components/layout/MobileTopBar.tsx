@@ -85,7 +85,12 @@ export default function MobileTopBar() {
                 <Link
                   key={l.to}
                   to={l.to}
-                  onClick={close}
+                  onClick={() => {
+                    close();
+                    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+                    document.documentElement.scrollTop = 0;
+                    document.body.scrollTop = 0;
+                  }}
                   className="block px-3 py-3 rounded-lg text-sm font-medium hover:bg-[#eff4ff] transition-colors"
                   style={{ color: fiscal.primary }}
                 >

@@ -10,7 +10,15 @@ interface FiscalBrandProps {
 
 export default function FiscalBrand({ inverted = false, className = "", size = 64 }: FiscalBrandProps) {
   return (
-    <Link to="/" className="inline-flex items-center select-none group decoration-none">
+    <Link
+      to="/"
+      onClick={() => {
+        window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+      }}
+      className="inline-flex items-center select-none group decoration-none"
+    >
       <img
         src={logoPng}
         alt="MyTaxFiling Logo"

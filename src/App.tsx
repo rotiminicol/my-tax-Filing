@@ -8,6 +8,7 @@ import CookieConsent from "@/components/CookieConsent";
 import LoadingOverlay from "@/components/brand/LoadingOverlay";
 import { AuthenticatedLayout } from "@/routes/customer-dashboard/_authenticated";
 import { AdminLayout } from "@/routes/admin/route";
+import ScrollToTop from "@/components/layout/ScrollToTop";
 
 // Landing pages
 import Home from "@/routes/_landing-page/index";
@@ -102,6 +103,7 @@ function RootLayout() {
 
   return (
     <>
+      <ScrollToTop />
       <Routes>
         {/* Landing pages */}
         <Route path="/" element={<Home />} />

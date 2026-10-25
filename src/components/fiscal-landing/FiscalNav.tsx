@@ -58,6 +58,11 @@ export default function FiscalNav() {
               <Link
                 key={link.to}
                 to={link.to}
+                onClick={() => {
+                  window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+                  document.documentElement.scrollTop = 0;
+                  document.body.scrollTop = 0;
+                }}
                 className="relative px-4 py-1.5 rounded-xl text-sm transition-colors duration-150"
                 style={{
                   color: INK,
@@ -89,6 +94,11 @@ export default function FiscalNav() {
         <div className="flex items-center gap-3">
           <Link
             to="/customer-dashboard/login"
+            onClick={() => {
+              window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+              document.documentElement.scrollTop = 0;
+              document.body.scrollTop = 0;
+            }}
             className="text-sm font-medium px-4 py-2 rounded-md border transition-all duration-200 hover:bg-stone-50 active:scale-[0.97]"
             style={{
               color: INK,
@@ -100,6 +110,11 @@ export default function FiscalNav() {
           </Link>
           <Link
             to="/contact"
+            onClick={() => {
+              window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+              document.documentElement.scrollTop = 0;
+              document.body.scrollTop = 0;
+            }}
             className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-md text-sm font-medium transition-all duration-200 hover:-translate-y-px hover:shadow-md active:scale-[0.97]"
             style={{
               backgroundColor: INK,
