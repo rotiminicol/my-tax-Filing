@@ -74,9 +74,9 @@ export default function FiscalFooter() {
             </h4>
             <ul className="space-y-3">
               {[
-                { to: "/taxes", label: "Personal Tax" },
-                { to: "/taxes", label: "Corporate Filing" },
-                { to: "/rent-receipt", label: "Rent Receipts" },
+                { to: "/rent-relief", label: "Rent Relief (for Individuals)" },
+                { to: "/e-invoicing", label: "E‑Invoicing (for Businesses)" },
+                { to: "/taxes", label: "Tax Filing" },
                 { to: "/document-renewal", label: "Document Renewal" },
               ].map((l) => (
                 <li key={l.label}>
@@ -115,10 +115,10 @@ export default function FiscalFooter() {
             </h4>
             <ul className="space-y-3">
               {[
-                { to: "/news", label: "Community Hub" },
                 { to: "/contact", label: "Contact Us" },
                 { to: "/legal/privacy", label: "Privacy Policy" },
-                { to: "/legal/terms", label: "Terms of Service" },
+                { to: "/legal/terms", label: "Terms of Use" },
+                { to: "/news", label: "Tax Updates" },
               ].map((l) => (
                 <li key={l.to}>
                   <Link
@@ -167,21 +167,21 @@ export default function FiscalFooter() {
                   className="w-4 h-4 mt-0.5 shrink-0"
                   style={{ color: YELLOW }}
                 />
-                <span>hello@mytaxfiling.ng</span>
+                <span>hello@taxfiling.com.ng</span>
               </li>
               <li className="flex items-start gap-3">
                 <Phone
                   className="w-4 h-4 mt-0.5 shrink-0"
                   style={{ color: YELLOW }}
                 />
-                <span>+234 (0) 800 TAX HELP</span>
+                <span>+234 (0) 1 234 5678</span>
               </li>
               <li className="flex items-start gap-3">
                 <MapPin
                   className="w-4 h-4 mt-0.5 shrink-0"
                   style={{ color: YELLOW }}
                 />
-                <span>Victoria Island, Lagos</span>
+                <span>Victoria Island, Lagos, Nigeria</span>
               </li>
             </ul>
           </motion.div>
@@ -193,28 +193,27 @@ export default function FiscalFooter() {
           className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4"
           style={{ borderTop: "1px solid rgba(252,250,245,0.10)" }}
         >
-          <div>
+          <div className="max-w-2xl">
             <p
-              className="text-xs"
+              className="text-xs font-medium"
               style={{
                 color: CREAM,
-                opacity: 0.65,
+                opacity: 0.85,
                 fontFamily: "Inter, system-ui, sans-serif",
                 lineHeight: 1.75,
               }}
             >
-              © {year} My Tax Filing. All rights reserved.
+              © 2026 MyTaxFiling. taxfiling.com.ng
             </p>
             <p
-              className="text-[10px] uppercase tracking-widest mt-1"
+              className="text-[11px] mt-1.5 leading-relaxed"
               style={{
                 color: CREAM,
-                opacity: 0.45,
-                fontFamily: "'Roboto Mono', monospace",
-                letterSpacing: "0.12em",
+                opacity: 0.5,
+                fontFamily: "Inter, system-ui, sans-serif",
               }}
             >
-              A Product of Nigerian Financial Technologies Ltd.
+              General information only, not tax or legal advice. Tax rules, thresholds and procedures may change. Please confirm current requirements with the Nigeria Revenue Service or a qualified tax adviser.
             </p>
           </div>
           <button

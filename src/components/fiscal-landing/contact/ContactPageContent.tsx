@@ -37,8 +37,13 @@ const fieldClass =
 const fieldStyle = { backgroundColor: "#f1f1f1", borderColor: "rgba(26,51,0,0.12)", color: "#1a3300" };
 
 export default function ContactPageContent() {
-  const [form, setForm] = useState({ name: "", email: "", subject: "General Inquiry", message: "" });
+  const [clientType, setClientType] = useState<"individual" | "business">("individual");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   const headerRef = useScrollAnimation(0.15);
   const formRef = useScrollAnimation(0.1);
@@ -47,16 +52,16 @@ export default function ContactPageContent() {
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name.trim() || !form.email.trim() || form.message.trim().length < 5) {
+    if (!name.trim() || !email.trim() || !message.trim()) {
       notify.error("Missing details", "Please fill in your name, email, and message.");
       return;
     }
     setBusy(true);
     setTimeout(() => {
       setBusy(false);
-      setForm({ name: "", email: "", subject: "General Inquiry", message: "" });
-      notify.success("Inquiry received", "Our team will respond within one business day.");
-    }, 1200);
+      setSubmitted(true);
+      notify.success("Inquiry received", "Thank you. We have received your message and will be in touch shortly.");
+    }, 1000);
   };
 
   return (
@@ -78,23 +83,16 @@ export default function ContactPageContent() {
       >
         <div
           className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border text-xs font-bold uppercase tracking-wide mb-6"
-          style={{ borderColor: SB.cardBorder, color: SB.ink, backgroundColor: SB.mint }}
+          style={{ borderColor: SB.cardBorder, color: SB.ink, backgroundColor: SB.yellow }}
         >
           <Headphones className="w-4 h-4" />
-          We're listening
+          NIGERIA TAX SPECIALISTS
         </div>
-        <h1 className="text-3xl md:text-5xl font-extrabold mb-4" style={{ color: SB.ink }}>
-          We're here to help you navigate your{" "}
-          <span className="relative inline-block">
-            fiscal journey.
-            <svg className="absolute -bottom-1 left-0 w-full" height="6" viewBox="0 0 100 6" preserveAspectRatio="none">
-              <path d="M0 5 Q 25 0, 50 5 T 100 5" stroke={SB.ink} strokeWidth="2" fill="none" strokeLinecap="round" opacity="0.3" />
-            </svg>
-          </span>
+        <h1 className="text-4xl md:text-6xl font-extrabold mb-4" style={{ color: SB.ink, fontFamily: "'Bricolage Grotesque', sans-serif" }}>
+          Contact us
         </h1>
         <p className="text-base md:text-lg max-w-2xl mx-auto" style={{ color: SB.muted }}>
-          Get expert guidance on Nigerian tax regulations. Our team of professionals is ready to assist you
-          with compliance, filing, and financial sovereignty.
+          Tell us whether you are an individual or a business and what you need. A tax specialist will get back to you within one working day.
         </p>
       </section>
 
@@ -109,69 +107,144 @@ export default function ContactPageContent() {
             }`}
             style={{ backgroundColor: SB.white, borderColor: SB.cardBorder }}
           >
-            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2" style={{ color: SB.ink }}>
-              <Send className="w-6 h-6" style={{ opacity: 0.5 }} />
-              Send us a message
-            </h2>
-            <form className="space-y-4" onSubmit={submit}>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1 text-left">
-                  <label className="text-sm font-medium" style={{ color: SB.muted }}>Full Name</label>
-                  <input
-                    type="text"
-                    className={fieldClass}
-                    style={fieldStyle}
-                    placeholder="John Doe"
-                    value={form.name}
-                    onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                  />
+            {submitted ? (
+              <div className="py-12 text-center space-y-4">
+                <div
+                  className="w-16 h-16 rounded-full mx-auto flex items-center justify-center"
+                  style={{ backgroundColor: SB.yellow, border: `2px solid ${SB.ink}` }}
+                >
+                  <Send className="w-8 h-8" style={{ color: SB.ink }} />
                 </div>
-                <div className="space-y-1 text-left">
-                  <label className="text-sm font-medium" style={{ color: SB.muted }}>Email Address</label>
-                  <input
-                    type="email"
-                    className={fieldClass}
-                    style={fieldStyle}
-                    placeholder="john@example.com"
-                    value={form.email}
-                    onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-                  />
-                </div>
+                <h3 className="text-2xl font-extrabold" style={{ color: SB.ink, fontFamily: "'Bricolage Grotesque', sans-serif" }}>
+                  Thank you!
+                </h3>
+                <p className="text-base max-w-md mx-auto" style={{ color: SB.muted }}>
+                  Thank you. We have received your message and will be in touch shortly.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSubmitted(false);
+                    setName("");
+                    setEmail("");
+                    setPhone("");
+                    setMessage("");
+                  }}
+                  className="mt-4 px-6 py-2.5 rounded-lg text-sm font-bold border transition-colors hover:bg-stone-50"
+                  style={{ borderColor: SB.ink, color: SB.ink }}
+                >
+                  Send another inquiry
+                </button>
               </div>
-              <div className="space-y-1 text-left">
-                <label className="text-sm font-medium" style={{ color: SB.muted }}>Subject</label>
-                <AppSelect
-                  value={form.subject}
-                  onValueChange={(subject) => setForm((f) => ({ ...f, subject }))}
-                  placeholder="Select subject"
-                  options={[
-                    { value: "General Inquiry", label: "General Inquiry" },
-                    { value: "Technical Support", label: "Technical Support" },
-                    { value: "Tax Compliance Help", label: "Tax Compliance Help" },
-                    { value: "Billing & Pricing", label: "Billing & Pricing" },
-                  ]}
-                />
-              </div>
-              <div className="space-y-1 text-left">
-                <label className="text-sm font-medium" style={{ color: SB.muted }}>Message</label>
-                <textarea
-                  className={`${fieldClass} resize-none`}
-                  style={fieldStyle}
-                  placeholder="How can we assist you today?"
-                  rows={5}
-                  value={form.message}
-                  onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={busy}
-                className="w-full font-bold py-4 rounded-xl shadow-md hover:shadow-lg active:scale-95 transition-all disabled:opacity-70 flex items-center justify-center gap-2"
-                style={{ backgroundColor: SB.ink, color: SB.cream }}
-              >
-                {busy ? "Sending…" : (<>Submit Inquiry <ArrowRight className="w-5 h-5" /></>)}
-              </button>
-            </form>
+            ) : (
+              <>
+                <h2 className="text-2xl font-bold mb-6 flex items-center gap-2" style={{ color: SB.ink }}>
+                  <Send className="w-6 h-6" style={{ opacity: 0.5 }} />
+                  Send us a message
+                </h2>
+                <form className="space-y-4" onSubmit={submit}>
+                  {/* Segmented type selector */}
+                  <div>
+                    <label className="text-sm font-medium block mb-2" style={{ color: SB.muted }}>
+                      I am:
+                    </label>
+                    <div className="grid grid-cols-2 gap-3 p-1 rounded-xl border" style={{ borderColor: SB.cardBorder, backgroundColor: "#f9f8f5" }}>
+                      <button
+                        type="button"
+                        onClick={() => setClientType("individual")}
+                        className={`py-2.5 px-3 rounded-lg text-sm font-bold transition-all ${
+                          clientType === "individual" ? "shadow-sm" : "opacity-60"
+                        }`}
+                        style={{
+                          backgroundColor: clientType === "individual" ? SB.ink : "transparent",
+                          color: clientType === "individual" ? SB.cream : SB.ink,
+                        }}
+                      >
+                        An individual or tenant
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setClientType("business")}
+                        className={`py-2.5 px-3 rounded-lg text-sm font-bold transition-all ${
+                          clientType === "business" ? "shadow-sm" : "opacity-60"
+                        }`}
+                        style={{
+                          backgroundColor: clientType === "business" ? SB.ink : "transparent",
+                          color: clientType === "business" ? SB.cream : SB.ink,
+                        }}
+                      >
+                        A business
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1 text-left">
+                      <label className="text-sm font-medium" style={{ color: SB.muted }}>Full Name *</label>
+                      <input
+                        type="text"
+                        required
+                        className={fieldClass}
+                        style={fieldStyle}
+                        placeholder="John Doe"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-1 text-left">
+                      <label className="text-sm font-medium" style={{ color: SB.muted }}>Email Address *</label>
+                      <input
+                        type="email"
+                        required
+                        className={fieldClass}
+                        style={fieldStyle}
+                        placeholder="john@example.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1 text-left">
+                    <label className="text-sm font-medium" style={{ color: SB.muted }}>Phone Number</label>
+                    <input
+                      type="tel"
+                      className={fieldClass}
+                      style={fieldStyle}
+                      placeholder="+234 (0) 800 000 0000"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="space-y-1 text-left">
+                    <label className="text-sm font-medium" style={{ color: SB.muted }}>How can we help? *</label>
+                    <textarea
+                      required
+                      className={`${fieldClass} resize-none`}
+                      style={fieldStyle}
+                      placeholder={
+                        clientType === "individual"
+                          ? "How can we assist you with rent relief or personal tax filing?"
+                          : "Tell us about your business turnover, accounting system, or e-invoicing needs..."
+                      }
+                      rows={5}
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={busy}
+                    className="w-full font-bold py-4 rounded-xl shadow-md hover:shadow-lg active:scale-95 transition-all disabled:opacity-70 flex items-center justify-center gap-2"
+                    style={{ backgroundColor: SB.ink, color: SB.cream }}
+                  >
+                    {busy ? "Sending…" : (<>Send message <ArrowRight className="w-5 h-5" /></>)}
+                  </button>
+                </form>
+              </>
+            )}
           </div>
 
           {/* Right column */}
@@ -181,69 +254,50 @@ export default function ContactPageContent() {
               cardsRef.isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
             }`}
           >
-            {/* Quick Connect */}
+            {/* Direct Details */}
             <div
-              className="rounded-2xl p-6 md:p-8 relative overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-300"
+              className="rounded-2xl p-6 md:p-8 relative overflow-hidden"
               style={{ backgroundColor: SB.ink, color: SB.cream }}
             >
-              <Headphones className="absolute top-4 right-4 w-24 h-24 opacity-10" />
-              <div className="absolute -top-10 -left-10 w-32 h-32 rounded-full bg-white/5 blur-2xl" />
-              <h3 className="text-2xl font-semibold mb-6 relative z-10">Quick Connect</h3>
+              <h3 className="text-2xl font-bold mb-6 relative z-10">Direct Contact</h3>
               <div className="space-y-5 relative z-10">
                 {[
-                  { icon: Mail, label: "Support Email", value: "help@mytaxfiling.ng" },
-                  { icon: Phone, label: "Phone Number", value: "+234 (0) 800 TAX HELP" },
+                  { icon: Mail, label: "Email", value: "hello@taxfiling.com.ng" },
+                  { icon: Phone, label: "Phone", value: "+234 (0) 1 234 5678" },
+                  { icon: MapPin, label: "Office", value: "Victoria Island, Lagos, Nigeria" },
                 ].map(({ icon: Icon, label, value }) => (
                   <div key={label} className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 bg-white/15">
-                      <Icon className="w-6 h-6 text-white" />
+                    <div className="w-11 h-11 rounded-full flex items-center justify-center shrink-0 bg-white/15">
+                      <Icon className="w-5 h-5 text-white" />
                     </div>
                     <div className="text-left">
                       <p className="text-xs uppercase tracking-wide opacity-60">{label}</p>
-                      <p className="font-bold">{value}</p>
+                      <p className="font-bold text-sm sm:text-base">{value}</p>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Physical Office */}
+            {/* Operating Hours & Response SLA */}
             <div
-              className="rounded-2xl p-6 md:p-8 border shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300"
+              className="rounded-2xl p-6 md:p-8 border shadow-sm"
               style={{ backgroundColor: SB.white, borderColor: SB.cardBorder }}
             >
-              <h3 className="text-2xl font-semibold mb-4 flex items-center gap-2" style={{ color: SB.ink }}>
-                <MapPin className="w-6 h-6" style={{ opacity: 0.5 }} />
-                Physical Office
+              <h3 className="text-xl font-bold mb-3 flex items-center gap-2" style={{ color: SB.ink }}>
+                <Headphones className="w-5 h-5" style={{ opacity: 0.6 }} />
+                Dedicated Advisory
               </h3>
-              <p className="text-sm mb-6" style={{ color: SB.muted }}>
-                Federal Capital Territory, Central Business District, Abuja, Nigeria
+              <p className="text-sm leading-relaxed mb-4" style={{ color: SB.muted }}>
+                Our team responds to all inquiries within one working day.
               </p>
-              <div
-                className="rounded-xl p-6 flex flex-col items-center justify-center border aspect-[4/3]"
-                style={{ backgroundColor: SB.cream, borderColor: SB.cardBorder }}
-              >
-                <div className="text-center space-y-4">
-                  <div
-                    className="inline-flex p-4 rounded-full shadow-md"
-                    style={{ backgroundColor: SB.mint }}
-                  >
-                    <MapPin className="w-8 h-8 md:w-10 md:h-10" style={{ color: SB.ink }} />
-                  </div>
-                  <h4 className="text-lg font-bold" style={{ color: SB.ink }}>Abuja HQ</h4>
-                  <p className="text-xs max-w-xs mx-auto" style={{ color: SB.muted }}>
-                    Central Business District, Abuja
-                  </p>
-                  <button
-                    type="button"
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg shadow-sm text-sm font-semibold hover:shadow-md transition-all"
-                    style={{ backgroundColor: SB.white, color: SB.ink }}
-                    onClick={() => notify.info("Map", "Opening map in your browser…")}
-                  >
-                    <MapPin className="w-4 h-4" />
-                    Open in Maps
-                  </button>
-                </div>
+              <div className="p-4 rounded-xl border" style={{ backgroundColor: "#f9f8f5", borderColor: SB.cardBorder }}>
+                <p className="text-xs uppercase font-mono font-bold tracking-wider opacity-60 mb-1">
+                  Operating Hours
+                </p>
+                <p className="text-sm font-bold" style={{ color: SB.ink }}>
+                  Monday – Friday: 8:00 AM – 5:00 PM WAT
+                </p>
               </div>
             </div>
           </div>

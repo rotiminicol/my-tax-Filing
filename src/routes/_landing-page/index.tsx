@@ -1,9 +1,9 @@
 import AppShell from "@/components/layout/AppShell";
-import HeroSection from "@/components/fiscal-landing/HeroSection";
-import ToolsSection from "@/components/fiscal-landing/ToolsSection";
-import StepsSection from "@/components/fiscal-landing/StepsSection";
-import UnifiedPricing from "@/components/sections/UnifiedPricing";
-import FinalCtaSection from "@/components/fiscal-landing/FinalCtaSection";
+import LandingHero from "@/components/fiscal-landing/LandingHero";
+import ChoosePathSection from "@/components/fiscal-landing/ChoosePathSection";
+import ForIndividualsSection from "@/components/fiscal-landing/ForIndividualsSection";
+import ForBusinessesSection from "@/components/fiscal-landing/ForBusinessesSection";
+import LandingContactSection from "@/components/fiscal-landing/LandingContactSection";
 import FiscalFooter from "@/components/fiscal-landing/FiscalFooter";
 
 export default function Home() {
@@ -13,14 +13,11 @@ export default function Home() {
         className="overflow-x-hidden font-sans"
         style={{ backgroundColor: "#fcfaf5" }}
       >
-        <HeroSection />
-        <ToolsSection />
-        <StepsSection />
-        <UnifiedPricing
-          headerTitle="Pricing Plans"
-          headerSubtitle="Plans designed to scale with your financial journey."
-        />
-        <FinalCtaSection />
+        <LandingHero />
+        <ChoosePathSection />
+        <ForIndividualsSection />
+        <ForBusinessesSection />
+        <LandingContactSection />
         <FiscalFooter />
       </main>
     </AppShell>

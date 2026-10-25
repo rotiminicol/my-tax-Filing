@@ -11,6 +11,7 @@ import { AdminLayout } from "@/routes/admin/route";
 
 // Landing pages
 import Home from "@/routes/_landing-page/index";
+import RentReliefLanding from "@/routes/_landing-page/rent-relief";
 import RentReceiptLanding from "@/routes/_landing-page/rent-receipt";
 import TaxesLanding from "@/routes/_landing-page/taxes";
 import EInvoicingLanding from "@/routes/_landing-page/e-invoicing";
@@ -104,6 +105,7 @@ function RootLayout() {
       <Routes>
         {/* Landing pages */}
         <Route path="/" element={<Home />} />
+        <Route path="/rent-relief" element={<RentReliefLanding />} />
         <Route path="/rent-receipt" element={<RentReceiptLanding />} />
         <Route path="/taxes" element={<TaxesLanding />} />
         <Route path="/e-invoicing" element={<EInvoicingLanding />} />

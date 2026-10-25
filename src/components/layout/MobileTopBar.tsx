@@ -8,10 +8,9 @@ import { fiscal } from "@/components/fiscal-landing/tokens";
 import { notify } from "@/components/Toaster";
 
 const navLinks = [
-  { to: "/rent-receipt", label: "Rent Receipt" },
-  { to: "/taxes", label: "Taxes" },
-  { to: "/document-renewal", label: "Document Renewal" },
-  { to: "/e-invoicing", label: "E-Invoicing" },
+  { to: "/rent-relief", label: "For individuals" },
+  { to: "/e-invoicing", label: "For businesses" },
+  { to: "/contact", label: "Contact" },
 ] as const;
 
 export default function MobileTopBar() {

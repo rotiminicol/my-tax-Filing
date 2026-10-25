@@ -4,10 +4,9 @@ import { Link, useLocation } from "react-router-dom";
 import FiscalBrand from "./FiscalBrand";
 
 const links = [
-  { to: "/rent-receipt", label: "Rent Receipt" },
-  { to: "/taxes", label: "Taxes" },
-  { to: "/document-renewal", label: "Document Renewal" },
-  { to: "/e-invoicing", label: "E‑Invoicing" },
+  { to: "/rent-relief", label: "For individuals" },
+  { to: "/e-invoicing", label: "For businesses" },
+  { to: "/contact", label: "Contact" },
 ] as const;
 
 const INK = "#1a3300";
@@ -52,7 +51,9 @@ export default function FiscalNav() {
         >
           {links.map((link) => {
             const active =
-              pathname === link.to || pathname.startsWith(`${link.to}/`);
+              pathname === link.to ||
+              (link.to === "/rent-relief" && pathname === "/rent-receipt") ||
+              pathname.startsWith(`${link.to}/`);
             return (
               <Link
                 key={link.to}
@@ -84,7 +85,7 @@ export default function FiscalNav() {
           })}
         </div>
 
-        {/* Auth */}
+        {/* Auth / CTA */}
         <div className="flex items-center gap-3">
           <Link
             to="/customer-dashboard/login"
@@ -98,7 +99,7 @@ export default function FiscalNav() {
             Log In
           </Link>
           <Link
-            to="/customer-dashboard/signup"
+            to="/contact"
             className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-md text-sm font-medium transition-all duration-200 hover:-translate-y-px hover:shadow-md active:scale-[0.97]"
             style={{
               backgroundColor: INK,
@@ -107,7 +108,7 @@ export default function FiscalNav() {
               boxShadow: "0 1px 3px rgba(26,51,0,0.10)",
             }}
           >
-            → Get Started Free
+            Contact us
           </Link>
         </div>
       </nav>
