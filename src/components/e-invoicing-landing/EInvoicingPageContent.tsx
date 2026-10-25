@@ -26,6 +26,7 @@ const CREAM = "#fcfaf5";
 const YELLOW = "#ffe95c";
 const TEAL = "#a8e5e5";
 const PENCIL = "#b6b6b6";
+const MINT = "#d5f5c2";
 
 const turnoverTable = [
   {

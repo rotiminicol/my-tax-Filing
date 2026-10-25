@@ -36,5 +36,9 @@ export const Route = createRootRoute({
       <AppClient />
     </ClientOnly>
   ),
-  notFoundComponent: () => null,
+  notFoundComponent: () => (
+    <ClientOnly fallback={null}>
+      <AppClient />
+    </ClientOnly>
+  ),
 });
