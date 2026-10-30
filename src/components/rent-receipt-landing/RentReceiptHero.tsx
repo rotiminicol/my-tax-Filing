@@ -3,7 +3,7 @@ import { ArrowUpRight, ShieldCheck } from "lucide-react";
 import ReceiptDocument from "@/components/receipt/ReceiptDocument";
 import type { Receipt } from "@/lib/rr/types";
 
-const INK = "#1a3300"; const CREAM = "#fcfaf5"; const YELLOW = "#ffe95c"; const PENCIL = "#b6b6b6"; const MINT = "#d5f5c2";
+const INK = "#18623f"; const CREAM = "#fcfaf5"; const YELLOW = "#ffe95c"; const PENCIL = "#b6b6b6"; const MINT = "#d5f5c2";
 
 const RETRO_BG = {
   backgroundImage: "radial-gradient(circle, rgba(26,51,0,0.09) 1.5px, transparent 1.5px)",

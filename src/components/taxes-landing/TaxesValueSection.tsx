@@ -1,6 +1,6 @@
 import { Shield, ScrollText, Gavel, TrendingUp } from "lucide-react";
 
-const INK = "#1a3300"; const CREAM = "#fcfaf5"; const YELLOW = "#ffe95c"; const PENCIL = "#b6b6b6";
+const INK = "#18623f"; const CREAM = "#fcfaf5"; const YELLOW = "#ffe95c"; const PENCIL = "#b6b6b6";
 
 const values = [
   { Icon: Shield, title: "FIRS & LIRS Certified", desc: "Our filing formats are vetted and accepted by the Federal Inland Revenue Service and all state boards.", stat: "100% Accepted" },

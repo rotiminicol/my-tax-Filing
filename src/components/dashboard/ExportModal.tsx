@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Download, FileText, FileCheck, CheckCircle2, X, Loader2 } from "lucide-react";
 
 const SB = {
-  forestInk: "#1a3300",
+  forestInk: "#18623f",
   cream: "#fcfaf5",
   yellow: "#ffe95c",
   pencilGray: "#b6b6b6",

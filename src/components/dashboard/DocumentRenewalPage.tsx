@@ -22,7 +22,7 @@ import DocumentUploadZone from "@/components/dashboard/documents/DocumentUploadZ
 
 /* Say Briefly tokens */
 const SB = {
-  forestInk: "#1a3300",
+  forestInk: "#18623f",
   cream: "#fcfaf5",
   yellow: "#ffe95c",
   mint: "#d5f5c2",
@@ -298,7 +298,7 @@ export default function DocumentRenewalPage() {
             <Link
               key={t.type}
               to={t.route}
-              className="px-4 py-2 rounded-full text-sm font-semibold border transition-colors hover:bg-[#1a3300] hover:text-[#fcfaf5]"
+              className="px-4 py-2 rounded-full text-sm font-semibold border transition-colors hover:bg-[#18623f] hover:text-[#fcfaf5]"
               style={{ borderColor: SB.cardBorder, color: SB.forestInk, backgroundColor: "#ffffff" }}
             >
               {t.label}
@@ -316,14 +316,14 @@ function EmptyHub() {
       className="rounded-xl p-10 text-center mb-8 border"
       style={{ backgroundColor: "#ffffff", borderColor: "rgba(26,51,0,0.10)" }}
     >
-      <p className="text-lg font-bold mb-2" style={{ color: "#1a3300" }}>No documents tracked yet</p>
+      <p className="text-lg font-bold mb-2" style={{ color: "#18623f" }}>No documents tracked yet</p>
       <p className="text-sm mb-6 max-w-md mx-auto" style={{ color: "#b6b6b6" }}>
         Add your vehicle licence or driver&apos;s licence to start receiving expiry reminders.
       </p>
       <Link
         to="/customer-dashboard/documents/new"
         className="inline-flex items-center gap-2 px-6 py-3 rounded-md font-bold text-sm transition-opacity hover:opacity-90"
-        style={{ backgroundColor: "#1a3300", color: "#fcfaf5" }}
+        style={{ backgroundColor: "#18623f", color: "#fcfaf5" }}
       >
         <Plus className="w-5 h-5" />
         Add your first document

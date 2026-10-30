@@ -4,7 +4,7 @@ import type { TaxCategory, TaxFilingStatus } from "@/lib/taxes";
 import { categoryIcon, TAX_CATEGORY_LABELS } from "@/lib/taxes";
 
 const SB = {
-  forestInk: "#1a3300",
+  forestInk: "#18623f",
   cream: "#fcfaf5",
   white: "#ffffff",
   cardBorder: "rgba(26,51,0,0.10)",

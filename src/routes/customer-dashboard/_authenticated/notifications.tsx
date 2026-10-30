@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 
 const SB = {
-  ink: "#1a3300",
+  ink: "#18623f",
   cream: "#fcfaf5",
   yellow: "#ffe95c",
   mint: "#d5f5c2",

@@ -5,7 +5,7 @@ import firsLogo from "@/assets/firs.png";
 import fctLogo from "@/assets/fct.png";
 
 const CREAM = "#fcfaf5";
-const INK = "#1a3300";
+const INK = "#18623f";
 const YELLOW = "#ffe95c";
 const TEAL = "#a8e5e5";
 const BLUSH = "#f6d0ff";

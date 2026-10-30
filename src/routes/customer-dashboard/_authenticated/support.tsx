@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 
 const SB = {
-  ink: "#1a3300",
+  ink: "#18623f",
   cream: "#fcfaf5",
   yellow: "#ffe95c",
   mint: "#d5f5c2",
@@ -155,7 +155,7 @@ function SupportPage() {
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Search tax guides or FAQ…"
-                className="w-full pl-11 pr-4 py-3 rounded-xl border text-sm outline-none focus:ring-2 focus:ring-[#1a3300]/20 focus:border-[#1a3300] transition-all"
+                className="w-full pl-11 pr-4 py-3 rounded-xl border text-sm outline-none focus:ring-2 focus:ring-[#18623f]/20 focus:border-[#18623f] transition-all"
                 style={{ backgroundColor: "#f1f1f1", borderColor: SB.cardBorder, color: SB.ink }}
               />
             </div>

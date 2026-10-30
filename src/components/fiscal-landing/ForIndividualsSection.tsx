@@ -11,7 +11,7 @@ import {
   Info,
 } from "lucide-react";
 
-const INK = "#1a3300";
+const INK = "#18623f";
 const CREAM = "#fcfaf5";
 const YELLOW = "#ffe95c";
 const MINT = "#d5f5c2";
@@ -192,7 +192,7 @@ export default function ForIndividualsSection() {
             style={{
               backgroundColor: MINT,
               border: `1.5px solid ${INK}`,
-              boxShadow: "4px 4px 0px 0px #1a3300",
+              boxShadow: "4px 4px 0px 0px #18623f",
             }}
           >
             <div>
@@ -210,10 +210,10 @@ export default function ForIndividualsSection() {
               </p>
 
               {/* Styled Table */}
-              <div className="overflow-x-auto rounded-xl border border-[#1a3300]/20 bg-white/70">
+              <div className="overflow-x-auto rounded-xl border border-[#18623f]/20 bg-white/70">
                 <table className="w-full text-left border-collapse text-sm">
                   <thead>
-                    <tr className="border-b border-[#1a3300]/15 bg-[#1a3300]/5">
+                    <tr className="border-b border-[#18623f]/15 bg-[#18623f]/5">
                       <th className="py-3.5 px-4 font-bold text-xs uppercase tracking-wider" style={{ color: INK }}>
                         Annual rent
                       </th>
@@ -225,7 +225,7 @@ export default function ForIndividualsSection() {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#1a3300]/10">
+                  <tbody className="divide-y divide-[#18623f]/10">
                     {tiers.map((t) => (
                       <tr key={t.rent} className="hover:bg-white/90 transition-colors">
                         <td className="py-4 px-4 font-bold" style={{ color: INK }}>
@@ -314,7 +314,7 @@ export default function ForIndividualsSection() {
         </div>
 
         {/* Action Row */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-[#1a3300]/15">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-[#18623f]/15">
           <Link
             to="/customer-dashboard/signup"
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-lg text-base font-bold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg active:scale-[0.97]"

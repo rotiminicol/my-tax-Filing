@@ -7,7 +7,7 @@ import { useTaxesStore } from "@/store/taxes";
 import { glassCard } from "./taxShared";
 
 const SB = {
-  forestInk: "#1a3300",
+  forestInk: "#18623f",
   cream: "#fcfaf5",
   yellow: "#ffe95c",
   mint: "#d5f5c2",

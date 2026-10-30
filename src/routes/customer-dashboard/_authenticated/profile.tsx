@@ -6,7 +6,7 @@ import { notify } from "@/components/Toaster";
 import { Camera, CheckCircle2, ShieldCheck } from "lucide-react";
 
 const SB = {
-  ink: "#1a3300",
+  ink: "#18623f",
   cream: "#fcfaf5",
   yellow: "#ffe95c",
   mint: "#d5f5c2",
@@ -257,7 +257,7 @@ function ProfilePage() {
                 <Field label="Email Address">
                   <input
                     type="email"
-                    className="w-full px-3.5 py-3 rounded-xl border text-sm outline-none focus:ring-2 focus:ring-[#1a3300]/20 focus:border-[#1a3300] transition-all"
+                    className="w-full px-3.5 py-3 rounded-xl border text-sm outline-none focus:ring-2 focus:ring-[#18623f]/20 focus:border-[#18623f] transition-all"
                     style={{ backgroundColor: "#f1f1f1", borderColor: SB.cardBorder, color: SB.ink }}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -266,7 +266,7 @@ function ProfilePage() {
                 <Field label="Phone Number">
                   <input
                     type="tel"
-                    className="w-full px-3.5 py-3 rounded-xl border text-sm outline-none focus:ring-2 focus:ring-[#1a3300]/20 focus:border-[#1a3300] transition-all"
+                    className="w-full px-3.5 py-3 rounded-xl border text-sm outline-none focus:ring-2 focus:ring-[#18623f]/20 focus:border-[#18623f] transition-all"
                     style={{ backgroundColor: "#f1f1f1", borderColor: SB.cardBorder, color: SB.ink }}
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}

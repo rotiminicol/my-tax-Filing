@@ -15,7 +15,7 @@ import {
 } from "@/components/dashboard/taxes/taxShared";
 
 const SB = {
-  forestInk: "#1a3300",
+  forestInk: "#18623f",
   yellow: "#ffe95c",
   mint: "#d5f5c2",
   teal: "#a8e5e5",

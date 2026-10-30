@@ -6,7 +6,7 @@ import { useTaxesStore } from "@/store/taxes";
 import { TaxStatusBadge, glassCard } from "./taxShared";
 
 const SB = {
-  forestInk: "#1a3300",
+  forestInk: "#18623f",
   cream: "#fcfaf5",
   yellow: "#ffe95c",
   pencilGray: "#b6b6b6",
@@ -140,7 +140,7 @@ function DeadlineItem({ item }: { item: any }) {
   return (
     <Link
       to={item.source === "vat" ? "/customer-dashboard/taxes/vat" : "/customer-dashboard/taxes/filing"}
-      className="flex items-center justify-between p-4 rounded-lg border hover:border-[#1a3300]/30 hover:bg-[#fcfaf5] transition-all gap-3 flex-wrap"
+      className="flex items-center justify-between p-4 rounded-lg border hover:border-[#18623f]/30 hover:bg-[#fcfaf5] transition-all gap-3 flex-wrap"
       style={{ backgroundColor: "#f9f9f9", borderColor: "rgba(26,51,0,0.10)" }}
     >
       <div className="flex items-center gap-4">
@@ -148,14 +148,14 @@ function DeadlineItem({ item }: { item: any }) {
           className="w-12 h-12 rounded-lg flex flex-col items-center justify-center text-xs font-bold"
           style={{
             backgroundColor: badge.urgent ? "#fecaca" : "#ffe95c",
-            color: badge.urgent ? "#991b1b" : "#1a3300",
+            color: badge.urgent ? "#991b1b" : "#18623f",
           }}
         >
           <span className="uppercase leading-none">{badge.month}</span>
           <span className="text-lg leading-tight">{badge.day}</span>
         </div>
         <div>
-          <p className="font-bold" style={{ color: "#1a3300" }}>{item.title}</p>
+          <p className="font-bold" style={{ color: "#18623f" }}>{item.title}</p>
           <p className="text-xs" style={{ color: "#b6b6b6" }}>
             {item.authority === "FIRS"
               ? "Federal Inland Revenue Service"

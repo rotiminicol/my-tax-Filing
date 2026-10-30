@@ -15,7 +15,7 @@ import {
 } from "./DocumentFormFields";
 
 const SB = {
-  forestInk: "#1a3300",
+  forestInk: "#18623f",
   cream: "#fcfaf5",
   yellow: "#ffe95c",
   mint: "#d5f5c2",
@@ -281,7 +281,7 @@ export default function DocumentTypePage({ config }: Props) {
           {vehicleLicenseMode || driversLicenseMode ? (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: "#1a3300" }}>
+                <label className="block text-sm font-medium mb-2" style={{ color: "#18623f" }}>
                   {config.referenceLabel}
                 </label>
                 <input
@@ -297,9 +297,9 @@ export default function DocumentTypePage({ config }: Props) {
 
               {vehicleLicenseMode && (
                 <div className="mt-1 text-sm">
-                  {lookupStatus === "busy" && <p style={{ color: "#1a3300" }}>Looking up plate details…</p>}
+                  {lookupStatus === "busy" && <p style={{ color: "#18623f" }}>Looking up plate details…</p>}
                   {lookupStatus === "found" && (
-                    <p style={{ color: "#1a3300" }}>Plate details loaded. We'll use these for the record.</p>
+                    <p style={{ color: "#18623f" }}>Plate details loaded. We'll use these for the record.</p>
                   )}
                   {lookupStatus === "missing" && <p style={{ color: "#b91c1c" }}>{lookupError}</p>}
                 </div>
@@ -413,7 +413,7 @@ function StatCard({
   const valueColor =
     accent === "warning" ? "#92400e"
     : accent === "success" ? "#1a5c3a"
-    : "#1a3300";
+    : "#18623f";
 
   return (
     <div
@@ -442,7 +442,7 @@ function EmptyTypeState({
         type="button"
         onClick={onAdd}
         className="px-5 py-2.5 rounded-md font-bold text-sm transition-opacity hover:opacity-90"
-        style={{ backgroundColor: "#1a3300", color: "#fcfaf5" }}
+        style={{ backgroundColor: "#18623f", color: "#fcfaf5" }}
       >
         Add {config.shortLabel}
       </button>
@@ -469,7 +469,7 @@ function DocumentRow({
       ? "#991b1b"
       : info.status === "expiring"
         ? "#f59e0b"
-        : "#1a3300";
+        : "#18623f";
 
   return (
     <div
@@ -481,7 +481,7 @@ function DocumentRow({
     >
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-3">
         <div>
-          <p className="font-bold" style={{ color: "#1a3300" }}>{doc.title}</p>
+          <p className="font-bold" style={{ color: "#18623f" }}>{doc.title}</p>
           <p className="text-sm" style={{ color: "#b6b6b6" }}>
             {doc.reference}
             {doc.issuer ? ` · ${doc.issuer}` : ""}
@@ -500,7 +500,7 @@ function DocumentRow({
               : info.status === "overdue" ? "#fecaca"
               : "#ffe95c",
             color:
-              info.status === "overdue" ? "#991b1b" : "#1a3300",
+              info.status === "overdue" ? "#991b1b" : "#18623f",
           }}
         >
           {doc.renewalStatus === "pending" ? "Renewal pending" : info.statusLabel}
@@ -517,7 +517,7 @@ function DocumentRow({
           </p>
           <p
             className="text-sm font-semibold"
-            style={{ color: info.progressColorKey === "error" ? "#991b1b" : "#1a3300" }}
+            style={{ color: info.progressColorKey === "error" ? "#991b1b" : "#18623f" }}
           >
             {info.progressLabel}
           </p>
@@ -533,7 +533,7 @@ function DocumentRow({
               type="button"
               onClick={onRenew}
               className="px-4 py-2 rounded-md text-sm font-bold transition-opacity hover:opacity-90"
-              style={{ backgroundColor: "#1a3300", color: "#fcfaf5" }}
+              style={{ backgroundColor: "#18623f", color: "#fcfaf5" }}
             >
               {info.status === "overdue" ? "Renew now" : "Start renewal"}
             </button>
@@ -543,7 +543,7 @@ function DocumentRow({
               type="button"
               onClick={onMarkRenewed}
               className="px-4 py-2 rounded-md text-sm font-semibold flex items-center gap-1 border transition-opacity hover:opacity-70"
-              style={{ borderColor: "rgba(26,51,0,0.10)", color: "#1a3300" }}
+              style={{ borderColor: "rgba(26,51,0,0.10)", color: "#18623f" }}
             >
               <CheckCircle className="w-4 h-4" />
               Mark renewed
@@ -553,7 +553,7 @@ function DocumentRow({
             type="button"
             onClick={onEdit}
             className="px-4 py-2 rounded-md text-sm font-semibold border transition-opacity hover:opacity-70"
-            style={{ borderColor: "rgba(26,51,0,0.10)", color: "#1a3300" }}
+            style={{ borderColor: "rgba(26,51,0,0.10)", color: "#18623f" }}
           >
             Edit
           </button>
@@ -578,7 +578,7 @@ function RequirementsPanel({ typeLabel }: { typeLabel: string }) {
       className="rounded-xl p-6"
       style={{ backgroundColor: "#fcfaf5", border: `1.5px solid rgba(26,51,0,0.10)` }}
     >
-      <h3 className="text-base font-bold mb-4" style={{ color: "#1a3300" }}>
+      <h3 className="text-base font-bold mb-4" style={{ color: "#18623f" }}>
         {typeLabel} — what to prepare
       </h3>
       <p className="text-sm" style={{ color: "#b6b6b6" }}>

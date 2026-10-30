@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 
 // ── Real dashboard tokens (matches dashboardTokens.ts) ──────────────
-const INK = "#1a3300";
+const INK = "#18623f";
 const CREAM = "#fcfaf5";
 const YELLOW = "#ffe95c";
 const MINT = "#d5f5c2";

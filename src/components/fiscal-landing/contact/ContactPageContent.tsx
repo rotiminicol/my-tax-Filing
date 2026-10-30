@@ -5,7 +5,7 @@ import { notify } from "@/components/Toaster";
 import AppSelect from "@/components/ui/AppSelect";
 
 const SB = {
-  ink: "#1a3300",
+  ink: "#18623f",
   cream: "#fcfaf5",
   yellow: "#ffe95c",
   mint: "#d5f5c2",
@@ -33,8 +33,8 @@ function useScrollAnimation(threshold = 0.1) {
 }
 
 const fieldClass =
-  "w-full border rounded-xl p-3.5 text-base outline-none transition-all duration-200 placeholder:text-gray-400 focus:ring-2 focus:ring-[#1a3300]/20 focus:border-[#1a3300]";
-const fieldStyle = { backgroundColor: "#f1f1f1", borderColor: "rgba(26,51,0,0.12)", color: "#1a3300" };
+  "w-full border rounded-xl p-3.5 text-base outline-none transition-all duration-200 placeholder:text-gray-400 focus:ring-2 focus:ring-[#18623f]/20 focus:border-[#18623f]";
+const fieldStyle = { backgroundColor: "#f1f1f1", borderColor: "rgba(26,51,0,0.12)", color: "#18623f" };
 
 export default function ContactPageContent() {
   const [clientType, setClientType] = useState<"individual" | "business">("individual");
@@ -316,7 +316,7 @@ export default function ContactPageContent() {
           </div>
           <Link
             to="/news"
-            className="border-2 px-8 py-3 rounded-xl font-bold transition-all hover:bg-[#1a3300]/10 active:scale-95 inline-flex items-center gap-2"
+            className="border-2 px-8 py-3 rounded-xl font-bold transition-all hover:bg-[#18623f]/10 active:scale-95 inline-flex items-center gap-2"
             style={{ borderColor: SB.ink, color: SB.ink }}
           >
             Visit Tax Hub

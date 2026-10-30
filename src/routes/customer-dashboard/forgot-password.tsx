@@ -5,7 +5,7 @@ import AuthFocusedLayout from "@/components/auth/AuthFocusedLayout";
 import { useAuth } from "@/store/auth";
 import { notify } from "@/components/Toaster";
 
-const INK = "#1a3300";
+const INK = "#18623f";
 const YELLOW = "#ffe95c";
 const TEAL = "#a8e5e5";
 

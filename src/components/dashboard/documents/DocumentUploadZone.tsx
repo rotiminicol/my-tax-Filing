@@ -61,12 +61,12 @@ export default function DocumentUploadZone({ onFile, compact }: Props) {
         >
           <CloudUpload
             className={compact ? "w-6 h-6" : "w-8 h-8"}
-            style={{ color: "#1a3300" }}
+            style={{ color: "#18623f" }}
           />
         </div>
         <p
           className={`font-bold text-center ${compact ? "text-base" : "text-xl"}`}
-          style={{ color: "#1a3300" }}
+          style={{ color: "#18623f" }}
         >
           Click or drop document here
         </p>

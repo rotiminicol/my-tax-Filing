@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { notify } from "@/components/Toaster";
 
-const INK = "#1a3300";
+const INK = "#18623f";
 const CREAM = "#fcfaf5";
 const YELLOW = "#ffe95c";
 const PENCIL = "#b6b6b6";
@@ -189,7 +189,7 @@ export default function LandingContactSection() {
             style={{
               backgroundColor: "#f5f2ec",
               border: `1.5px solid ${INK}`,
-              boxShadow: "5px 5px 0px 0px #1a3300",
+              boxShadow: "5px 5px 0px 0px #18623f",
             }}
           >
             {submitted ? (
@@ -231,7 +231,7 @@ export default function LandingContactSection() {
                   <label className="block text-xs font-bold uppercase tracking-wider mb-2.5" style={{ color: INK }}>
                     I am:
                   </label>
-                  <div className="grid grid-cols-2 gap-3 p-1.5 rounded-xl border border-[#1a3300]/20 bg-white">
+                  <div className="grid grid-cols-2 gap-3 p-1.5 rounded-xl border border-[#18623f]/20 bg-white">
                     <button
                       type="button"
                       onClick={() => setClientType("individual")}
@@ -358,7 +358,7 @@ export default function LandingContactSection() {
                   style={{
                     backgroundColor: INK,
                     color: CREAM,
-                    boxShadow: "0 2px 8px rgba(26,51,0,0.14)",
+                    boxShadow: "0 2px 8px rgba(24,98,63,0.14)",
                   }}
                 >
                   {loading ? (

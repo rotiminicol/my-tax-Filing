@@ -12,7 +12,7 @@ import {
   FileCheck2,
 } from "lucide-react";
 
-const INK = "#1a3300";
+const INK = "#18623f";
 const CREAM = "#fcfaf5";
 const YELLOW = "#ffe95c";
 const TEAL = "#a8e5e5";
@@ -149,7 +149,7 @@ export default function ForBusinessesSection() {
           style={{
             backgroundColor: CREAM,
             border: `1.5px solid ${INK}`,
-            boxShadow: "4px 4px 0px 0px #1a3300",
+            boxShadow: "4px 4px 0px 0px #18623f",
           }}
         >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6">
@@ -172,10 +172,10 @@ export default function ForBusinessesSection() {
             </span>
           </div>
 
-          <div className="overflow-x-auto rounded-xl border border-[#1a3300]/20 bg-white">
+          <div className="overflow-x-auto rounded-xl border border-[#18623f]/20 bg-white">
             <table className="w-full text-left border-collapse text-sm">
               <thead>
-                <tr className="border-b border-[#1a3300]/15 bg-[#f5f2ec]">
+                <tr className="border-b border-[#18623f]/15 bg-[#f5f2ec]">
                   <th className="py-3.5 px-5 font-bold text-xs uppercase tracking-wider" style={{ color: INK }}>
                     Business size
                   </th>
@@ -187,7 +187,7 @@ export default function ForBusinessesSection() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#1a3300]/10">
+              <tbody className="divide-y divide-[#18623f]/10">
                 {turnoverTiers.map((row) => (
                   <tr key={row.tier} className="hover:bg-stone-50 transition-colors">
                     <td className="py-4 px-5 font-extrabold text-base" style={{ color: INK }}>
@@ -235,7 +235,7 @@ export default function ForBusinessesSection() {
             style={{
               backgroundColor: TEAL,
               border: `1.5px solid ${INK}`,
-              boxShadow: "4px 4px 0px 0px #1a3300",
+              boxShadow: "4px 4px 0px 0px #18623f",
             }}
           >
             <div>
@@ -256,7 +256,7 @@ export default function ForBusinessesSection() {
                 {businessSteps.map((s, idx) => (
                   <div
                     key={s.step}
-                    className="p-5 rounded-xl bg-white/70 border border-[#1a3300]/15 flex items-start gap-4"
+                    className="p-5 rounded-xl bg-white/70 border border-[#18623f]/15 flex items-start gap-4"
                   >
                     <div
                       className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm shrink-0"
@@ -335,7 +335,7 @@ export default function ForBusinessesSection() {
         </div>
 
         {/* Action Row */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-[#1a3300]/15">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-[#18623f]/15">
           <a
             href="#contact"
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-lg text-base font-bold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg active:scale-[0.97]"

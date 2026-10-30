@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Send, Mail, Link as LinkIcon, Copy, CheckCircle2, X, Loader2, ShieldCheck, Users } from "lucide-react";
 
 const SB = {
-  forestInk: "#1a3300",
+  forestInk: "#18623f",
   cream: "#fcfaf5",
   yellow: "#ffe95c",
   pencilGray: "#b6b6b6",
@@ -133,7 +133,7 @@ export default function ShareModal({ isOpen, onClose }: ShareModalProps) {
                   value={emailAddress}
                   onChange={(e) => setEmailAddress(e.target.value)}
                   placeholder="hr@company.com"
-                  className="w-full px-4 py-2.5 rounded-lg border outline-none text-sm transition-all focus:ring-2 focus:ring-[#1a3300]/20 focus:border-[#1a3300]"
+                  className="w-full px-4 py-2.5 rounded-lg border outline-none text-sm transition-all focus:ring-2 focus:ring-[#18623f]/20 focus:border-[#18623f]"
                   style={inputStyle}
                 />
               </div>
@@ -147,7 +147,7 @@ export default function ShareModal({ isOpen, onClose }: ShareModalProps) {
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="Please find attached My Tax Filling for the 2026 tax year claim..."
                   rows={3}
-                  className="w-full px-4 py-2.5 rounded-lg border outline-none text-sm transition-all focus:ring-2 focus:ring-[#1a3300]/20 focus:border-[#1a3300] resize-none"
+                  className="w-full px-4 py-2.5 rounded-lg border outline-none text-sm transition-all focus:ring-2 focus:ring-[#18623f]/20 focus:border-[#18623f] resize-none"
                   style={inputStyle}
                 />
               </div>

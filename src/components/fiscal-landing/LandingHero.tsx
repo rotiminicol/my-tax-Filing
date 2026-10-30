@@ -9,7 +9,7 @@ import { Link } from "react-router-dom";
 import { ShieldCheck, UserCheck, Building2, ArrowRight } from "lucide-react";
 import DashboardMockup from "./DashboardMockup";
 
-const INK = "#1a3300";
+const INK = "#18623f";
 const CREAM = "#fcfaf5";
 const YELLOW = "#ffe95c";
 const PENCIL = "#b6b6b6";
@@ -167,11 +167,11 @@ export default function LandingHero() {
         ))}
       </motion.div>
 
-      {/* Dashboard Preview / Mockup */}
+      {/* Dashboard Preview / Mockup - Hidden on mobile */}
       <motion.div
         {...ent(0.40, 30)}
         style={{ y: mockupY }}
-        className="relative z-10 w-full max-w-[1100px] mx-auto px-5 mt-12"
+        className="relative z-10 w-full max-w-[1100px] mx-auto px-5 mt-12 hidden md:block"
       >
         <div
           className="rounded-2xl overflow-hidden"

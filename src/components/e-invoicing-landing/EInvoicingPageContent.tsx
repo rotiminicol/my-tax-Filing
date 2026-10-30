@@ -21,7 +21,7 @@ import {
   Sparkles,
 } from "lucide-react";
 
-const INK = "#1a3300";
+const INK = "#18623f";
 const CREAM = "#fcfaf5";
 const YELLOW = "#ffe95c";
 const TEAL = "#a8e5e5";
@@ -251,25 +251,25 @@ export default function EInvoicingPageContent() {
                 style={{
                   backgroundColor: TEAL,
                   border: `1.5px solid ${INK}`,
-                  boxShadow: "5px 5px 0px 0px #1a3300",
+                  boxShadow: "5px 5px 0px 0px #18623f",
                 }}
               >
-                <div className="flex items-center justify-between pb-4 border-b border-[#1a3300]/20 mb-4">
+                <div className="flex items-center justify-between pb-4 border-b border-[#18623f]/20 mb-4">
                   <div className="flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-pulse" />
                     <span className="text-xs font-mono font-bold uppercase tracking-wider" style={{ color: INK }}>
                       NRS MBS Compliant
                     </span>
                   </div>
-                  <span className="text-[11px] font-mono px-2.5 py-1 rounded-md bg-white/70 border border-[#1a3300]/15" style={{ color: INK }}>
+                  <span className="text-[11px] font-mono px-2.5 py-1 rounded-md bg-white/70 border border-[#18623f]/15" style={{ color: INK }}>
                     LIVE DEMO
                   </span>
                 </div>
 
-                <div className="bg-white/90 rounded-xl p-5 border border-[#1a3300]/15 space-y-4">
+                <div className="bg-white/90 rounded-xl p-5 border border-[#18623f]/15 space-y-4">
                   <div>
                     <p className="text-[10px] font-mono uppercase text-gray-500">Official Invoice Identifier</p>
-                    <p className="text-sm font-mono font-extrabold text-[#1a3300]">IRN: 2026-NRS-84920-F7B1</p>
+                    <p className="text-sm font-mono font-extrabold text-[#18623f]">IRN: 2026-NRS-84920-F7B1</p>
                   </div>
 
                   <div className="flex items-center justify-between p-3 rounded-lg bg-emerald-50 border border-emerald-200">
@@ -286,8 +286,8 @@ export default function EInvoicingPageContent() {
                   </div>
 
                   <div className="flex items-center gap-4 pt-2">
-                    <div className="w-16 h-16 rounded-lg bg-white p-1.5 border border-[#1a3300]/20 flex items-center justify-center shrink-0">
-                      <QrCode className="w-full h-full text-[#1a3300]" />
+                    <div className="w-16 h-16 rounded-lg bg-white p-1.5 border border-[#18623f]/20 flex items-center justify-center shrink-0">
+                      <QrCode className="w-full h-full text-[#18623f]" />
                     </div>
                     <div className="text-xs leading-snug" style={{ color: INK }}>
                       <p className="font-bold">Instant Buyer Verification</p>
@@ -309,7 +309,7 @@ export default function EInvoicingPageContent() {
       </section>
 
       {/* ── 2. What is e-invoicing in Nigeria? ── */}
-      <section className="py-20 border-t border-[#1a3300]/15" style={{ backgroundColor: "#f5f2ec" }}>
+      <section className="py-20 border-t border-[#18623f]/15" style={{ backgroundColor: "#f5f2ec" }}>
         <div className="max-w-[1200px] mx-auto px-5 md:px-10">
           <div className="max-w-3xl mb-12 space-y-4">
             <span
@@ -332,7 +332,7 @@ export default function EInvoicingPageContent() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="p-6 rounded-2xl bg-white border border-[#1a3300]/15 shadow-sm space-y-3">
+            <div className="p-6 rounded-2xl bg-white border border-[#18623f]/15 shadow-sm space-y-3">
               <div
                 className="w-12 h-12 rounded-xl flex items-center justify-center"
                 style={{ backgroundColor: YELLOW, color: INK, border: `1px solid ${INK}` }}
@@ -347,7 +347,7 @@ export default function EInvoicingPageContent() {
               </p>
             </div>
 
-            <div className="p-6 rounded-2xl bg-white border border-[#1a3300]/15 shadow-sm space-y-3">
+            <div className="p-6 rounded-2xl bg-white border border-[#18623f]/15 shadow-sm space-y-3">
               <div
                 className="w-12 h-12 rounded-xl flex items-center justify-center"
                 style={{ backgroundColor: TEAL, color: INK, border: `1px solid ${INK}` }}
@@ -362,7 +362,7 @@ export default function EInvoicingPageContent() {
               </p>
             </div>
 
-            <div className="p-6 rounded-2xl bg-white border border-[#1a3300]/15 shadow-sm space-y-3">
+            <div className="p-6 rounded-2xl bg-white border border-[#18623f]/15 shadow-sm space-y-3">
               <div
                 className="w-12 h-12 rounded-xl flex items-center justify-center"
                 style={{ backgroundColor: MINT, color: INK, border: `1px solid ${INK}` }}
@@ -379,7 +379,7 @@ export default function EInvoicingPageContent() {
           </div>
 
           <div
-            className="p-5 rounded-2xl bg-[#1a3300] text-[#fcfaf5] text-sm sm:text-base leading-relaxed"
+            className="p-5 rounded-2xl bg-[#18623f] text-[#fcfaf5] text-sm sm:text-base leading-relaxed"
           >
             <strong>The result:</strong> Invoices that are traceable, verifiable and audit-ready, which means
             fewer fake invoices, fewer disputes and cleaner VAT records for both suppliers and corporate buyers.
@@ -388,7 +388,7 @@ export default function EInvoicingPageContent() {
       </section>
 
       {/* ── 3. Does it apply to my business? (Turnover table) ── */}
-      <section className="py-24 border-t border-[#1a3300]/15" style={{ backgroundColor: CREAM }}>
+      <section className="py-24 border-t border-[#18623f]/15" style={{ backgroundColor: CREAM }}>
         <div className="max-w-[1200px] mx-auto px-5 md:px-10">
           <div className="max-w-3xl mb-12 space-y-3">
             <span
@@ -410,12 +410,12 @@ export default function EInvoicingPageContent() {
 
           <div
             className="rounded-2xl p-7 sm:p-9 border mb-8 bg-[#f5f2ec]"
-            style={{ borderColor: PENCIL, boxShadow: "4px 4px 0px 0px #1a3300" }}
+            style={{ borderColor: PENCIL, boxShadow: "4px 4px 0px 0px #18623f" }}
           >
-            <div className="overflow-x-auto rounded-xl border border-[#1a3300]/15 bg-white">
+            <div className="overflow-x-auto rounded-xl border border-[#18623f]/15 bg-white">
               <table className="w-full text-left text-sm">
                 <thead>
-                  <tr className="bg-[#f5f2ec] border-b border-[#1a3300]/15">
+                  <tr className="bg-[#f5f2ec] border-b border-[#18623f]/15">
                     <th className="py-4 px-5 font-bold text-xs uppercase" style={{ color: INK }}>
                       Business size
                     </th>
@@ -427,7 +427,7 @@ export default function EInvoicingPageContent() {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#1a3300]/10">
+                <tbody className="divide-y divide-[#18623f]/10">
                   {turnoverTable.map((row) => (
                     <tr key={row.tier} className="hover:bg-stone-50">
                       <td className="py-4 px-5 font-extrabold text-base" style={{ color: INK }}>
@@ -471,7 +471,7 @@ export default function EInvoicingPageContent() {
       </section>
 
       {/* ── 4. How invoices are handled & Why compliance is hard ── */}
-      <section className="py-24 border-t border-[#1a3300]/15" style={{ backgroundColor: "#f5f2ec" }}>
+      <section className="py-24 border-t border-[#18623f]/15" style={{ backgroundColor: "#f5f2ec" }}>
         <div className="max-w-[1200px] mx-auto px-5 md:px-10">
           <div className="max-w-3xl mb-14 space-y-3">
             <span
@@ -489,7 +489,7 @@ export default function EInvoicingPageContent() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
-            <div className="p-6 rounded-2xl bg-white border border-[#1a3300]/15 space-y-3">
+            <div className="p-6 rounded-2xl bg-white border border-[#18623f]/15 space-y-3">
               <span className="text-xs font-mono font-bold uppercase text-emerald-800">01 · B2B and B2G</span>
               <h3 className="font-extrabold text-lg" style={{ color: INK }}>
                 Pre-Validation Clearance
@@ -500,7 +500,7 @@ export default function EInvoicingPageContent() {
               </p>
             </div>
 
-            <div className="p-6 rounded-2xl bg-white border border-[#1a3300]/15 space-y-3">
+            <div className="p-6 rounded-2xl bg-white border border-[#18623f]/15 space-y-3">
               <span className="text-xs font-mono font-bold uppercase text-amber-800">02 · B2C Transactions</span>
               <h3 className="font-extrabold text-lg" style={{ color: INK }}>
                 High-Value Reporting
@@ -511,7 +511,7 @@ export default function EInvoicingPageContent() {
               </p>
             </div>
 
-            <div className="p-6 rounded-2xl bg-white border border-[#1a3300]/15 space-y-3">
+            <div className="p-6 rounded-2xl bg-white border border-[#18623f]/15 space-y-3">
               <span className="text-xs font-mono font-bold uppercase text-sky-800">03 · Review Window</span>
               <h3 className="font-extrabold text-lg" style={{ color: INK }}>
                 Buyer Acceptance Window
@@ -557,7 +557,7 @@ export default function EInvoicingPageContent() {
       </section>
 
       {/* ── 5. How MyTaxFiling works (5 steps) ── */}
-      <section className="py-24 border-t border-[#1a3300]/15" style={{ backgroundColor: CREAM }}>
+      <section className="py-24 border-t border-[#18623f]/15" style={{ backgroundColor: CREAM }}>
         <div className="max-w-[1200px] mx-auto px-5 md:px-10">
           <div className="text-center max-w-2xl mx-auto mb-16 space-y-3">
             <span
@@ -603,13 +603,13 @@ export default function EInvoicingPageContent() {
       </section>
 
       {/* ── 6. What you get & Why it matters ── */}
-      <section className="py-24 border-t border-[#1a3300]/15" style={{ backgroundColor: "#f5f2ec" }}>
+      <section className="py-24 border-t border-[#18623f]/15" style={{ backgroundColor: "#f5f2ec" }}>
         <div className="max-w-[1200px] mx-auto px-5 md:px-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch mb-14">
             {/* What you get (6 items) */}
             <div
               className="lg:col-span-7 rounded-2xl p-8 sm:p-10 border bg-white flex flex-col justify-between"
-              style={{ borderColor: PENCIL, boxShadow: "4px 4px 0px 0px #1a3300" }}
+              style={{ borderColor: PENCIL, boxShadow: "4px 4px 0px 0px #18623f" }}
             >
               <div>
                 <span
@@ -629,7 +629,7 @@ export default function EInvoicingPageContent() {
                   {whatYouGet.map((item) => (
                     <div
                       key={item.title}
-                      className="p-4 rounded-xl bg-[#f5f2ec] border border-[#1a3300]/10 space-y-1"
+                      className="p-4 rounded-xl bg-[#f5f2ec] border border-[#18623f]/10 space-y-1"
                     >
                       <h4 className="font-bold text-sm" style={{ color: INK }}>
                         • {item.title}
@@ -690,7 +690,7 @@ export default function EInvoicingPageContent() {
       </section>
 
       {/* ── 7. FAQs (Accordion) ── */}
-      <section className="py-24 border-t border-[#1a3300]/15" style={{ backgroundColor: CREAM }}>
+      <section className="py-24 border-t border-[#18623f]/15" style={{ backgroundColor: CREAM }}>
         <div className="max-w-[860px] mx-auto px-5 md:px-10">
           <div className="text-center mb-14 space-y-3">
             <span
@@ -733,7 +733,7 @@ export default function EInvoicingPageContent() {
                     />
                   </button>
                   {isOpen && (
-                    <div className="px-5 pb-6 sm:px-6 text-sm sm:text-base leading-relaxed opacity-80 border-t border-[#1a3300]/10 pt-4" style={{ color: INK }}>
+                    <div className="px-5 pb-6 sm:px-6 text-sm sm:text-base leading-relaxed opacity-80 border-t border-[#18623f]/10 pt-4" style={{ color: INK }}>
                       {faq.a}
                     </div>
                   )}
@@ -745,7 +745,7 @@ export default function EInvoicingPageContent() {
       </section>
 
       {/* ── 8. Closing Call to Action & Disclaimer ── */}
-      <section className="py-20 border-t border-[#1a3300]/15" style={{ backgroundColor: TEAL }}>
+      <section className="py-20 border-t border-[#18623f]/15" style={{ backgroundColor: TEAL }}>
         <div className="max-w-[1200px] mx-auto px-5 md:px-10">
           <div
             className="rounded-3xl p-10 sm:p-14 text-center max-w-4xl mx-auto space-y-6"

@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowUpRight, ShieldCheck, Bell, AlertTriangle, CheckCircle2, Clock } from "lucide-react";
 
-const INK = "#1a3300"; const CREAM = "#fcfaf5"; const YELLOW = "#ffe95c"; const PENCIL = "#b6b6b6"; const BLUSH = "#f6d0ff";
+const INK = "#18623f"; const CREAM = "#fcfaf5"; const YELLOW = "#ffe95c"; const PENCIL = "#b6b6b6"; const BLUSH = "#f6d0ff";
 
 const RETRO_BG = {
   backgroundImage: "radial-gradient(circle, rgba(26,51,0,0.09) 1.5px, transparent 1.5px)",

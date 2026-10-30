@@ -4,7 +4,7 @@ import firsLogo from "@/assets/firs.png";
 import fctLogo from "@/assets/fct.png";
 
 const CREAM = "#fcfaf5";
-const INK = "#1a3300";
+const INK = "#18623f";
 const DOT_BG = {
   backgroundImage: "radial-gradient(circle, rgba(26,51,0,0.08) 1.5px, transparent 1.5px)",
   backgroundSize: "22px 22px",

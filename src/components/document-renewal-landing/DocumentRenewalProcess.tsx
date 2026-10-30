@@ -1,6 +1,6 @@
 import { Upload, Bell, MousePointerClick } from "lucide-react";
 
-const INK = "#1a3300"; const CREAM = "#fcfaf5"; const YELLOW = "#ffe95c"; const PENCIL = "#b6b6b6";
+const INK = "#18623f"; const CREAM = "#fcfaf5"; const YELLOW = "#ffe95c"; const PENCIL = "#b6b6b6";
 
 const steps = [
   { Icon: Upload, n: "01", title: "Upload Your Documents", desc: "Scan or photograph your existing documents and upload them to your secure vault. We extract the expiry dates automatically." },

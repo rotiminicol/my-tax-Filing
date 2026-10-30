@@ -2,7 +2,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowUpRight, Home, ReceiptText, Sparkles, Building2, CheckCircle2 } from "lucide-react";
 
-const INK = "#1a3300";
+const INK = "#18623f";
 const CREAM = "#fcfaf5";
 const YELLOW = "#ffe95c";
 const MINT = "#d5f5c2";
@@ -107,7 +107,7 @@ export default function ChoosePathSection() {
               style={{
                 backgroundColor: MINT,
                 border: `1.5px solid ${INK}`,
-                boxShadow: "4px 4px 0px 0px #1a3300",
+                boxShadow: "4px 4px 0px 0px #18623f",
               }}
             >
               <div>
@@ -218,7 +218,7 @@ export default function ChoosePathSection() {
               style={{
                 backgroundColor: TEAL,
                 border: `1.5px solid ${INK}`,
-                boxShadow: "4px 4px 0px 0px #1a3300",
+                boxShadow: "4px 4px 0px 0px #18623f",
               }}
             >
               <div>

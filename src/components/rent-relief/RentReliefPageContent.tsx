@@ -18,7 +18,7 @@ import {
   UserCheck,
 } from "lucide-react";
 
-const INK = "#1a3300";
+const INK = "#18623f";
 const CREAM = "#fcfaf5";
 const YELLOW = "#ffe95c";
 const MINT = "#d5f5c2";
@@ -237,7 +237,7 @@ export default function RentReliefPageContent() {
       </section>
 
       {/* ── 2. What is rent relief? ── */}
-      <section className="py-20 border-t border-[#1a3300]/15" style={{ backgroundColor: "#f5f2ec" }}>
+      <section className="py-20 border-t border-[#18623f]/15" style={{ backgroundColor: "#f5f2ec" }}>
         <div className="max-w-[1200px] mx-auto px-5 md:px-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
             <div className="lg:col-span-5 space-y-4">
@@ -273,7 +273,7 @@ export default function RentReliefPageContent() {
                 ].map((item) => (
                   <div
                     key={item}
-                    className="p-4 rounded-xl flex items-center gap-3.5 bg-white border border-[#1a3300]/12"
+                    className="p-4 rounded-xl flex items-center gap-3.5 bg-white border border-[#18623f]/12"
                   >
                     <div
                       className="w-6 h-6 rounded-full flex items-center justify-center shrink-0"
@@ -293,7 +293,7 @@ export default function RentReliefPageContent() {
       </section>
 
       {/* ── 3. How much could I save? (Table + Interactive Calculator) ── */}
-      <section id="calculator" className="py-24 border-t border-[#1a3300]/15" style={{ backgroundColor: CREAM }}>
+      <section id="calculator" className="py-24 border-t border-[#18623f]/15" style={{ backgroundColor: CREAM }}>
         <div className="max-w-[1200px] mx-auto px-5 md:px-10">
           <div className="max-w-2xl mb-12 space-y-3">
             <span
@@ -317,15 +317,15 @@ export default function RentReliefPageContent() {
             {/* Table */}
             <div
               className="lg:col-span-6 rounded-2xl p-7 border bg-white"
-              style={{ borderColor: PENCIL, boxShadow: "4px 4px 0px 0px #1a3300" }}
+              style={{ borderColor: PENCIL, boxShadow: "4px 4px 0px 0px #18623f" }}
             >
               <h3 className="font-extrabold text-xl mb-4" style={{ color: INK }}>
                 Statutory Benchmark Table
               </h3>
-              <div className="overflow-x-auto rounded-xl border border-[#1a3300]/15">
+              <div className="overflow-x-auto rounded-xl border border-[#18623f]/15">
                 <table className="w-full text-left text-sm">
                   <thead>
-                    <tr className="bg-[#f5f2ec] border-b border-[#1a3300]/15">
+                    <tr className="bg-[#f5f2ec] border-b border-[#18623f]/15">
                       <th className="py-3.5 px-4 font-bold text-xs uppercase" style={{ color: INK }}>
                         Annual rent
                       </th>
@@ -337,7 +337,7 @@ export default function RentReliefPageContent() {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#1a3300]/10">
+                  <tbody className="divide-y divide-[#18623f]/10">
                     {SAVINGS_TABLE.map((row) => (
                       <tr key={row.rent} className="hover:bg-amber-50/40">
                         <td className="py-3.5 px-4 font-bold" style={{ color: INK }}>
@@ -362,7 +362,7 @@ export default function RentReliefPageContent() {
               style={{
                 backgroundColor: MINT,
                 border: `1.5px solid ${INK}`,
-                boxShadow: "4px 4px 0px 0px #1a3300",
+                boxShadow: "4px 4px 0px 0px #18623f",
               }}
             >
               <div className="flex items-center gap-2 mb-4">
@@ -390,7 +390,7 @@ export default function RentReliefPageContent() {
                     step="50000"
                     value={rentInput}
                     onChange={(e) => setRentInput(Number(e.target.value))}
-                    className="w-full accent-[#1a3300] cursor-pointer"
+                    className="w-full accent-[#18623f] cursor-pointer"
                   />
                   <div className="flex justify-between text-[11px] font-mono opacity-50 mt-1">
                     <span>₦300k</span>
@@ -412,8 +412,8 @@ export default function RentReliefPageContent() {
                         onClick={() => setTaxRate(rate)}
                         className={`py-2 rounded-lg text-xs font-bold border transition-all ${
                           taxRate === rate
-                            ? "bg-[#1a3300] text-[#fcfaf5] border-[#1a3300]"
-                            : "bg-white text-[#1a3300] border-[#1a3300]/20 hover:border-[#1a3300]"
+                            ? "bg-[#18623f] text-[#fcfaf5] border-[#18623f]"
+                            : "bg-white text-[#18623f] border-[#18623f]/20 hover:border-[#18623f]"
                         }`}
                       >
                         {rate}% Band
@@ -424,7 +424,7 @@ export default function RentReliefPageContent() {
 
                 {/* Result Cards */}
                 <div className="grid grid-cols-2 gap-3 pt-2">
-                  <div className="p-4 rounded-xl bg-white/80 border border-[#1a3300]/15">
+                  <div className="p-4 rounded-xl bg-white/80 border border-[#18623f]/15">
                     <p className="text-xs font-mono uppercase opacity-60 mb-1" style={{ color: INK }}>
                       Relief Deduction
                     </p>
@@ -436,7 +436,7 @@ export default function RentReliefPageContent() {
                     </p>
                   </div>
 
-                  <div className="p-4 rounded-xl bg-[#1a3300] text-[#fcfaf5]">
+                  <div className="p-4 rounded-xl bg-[#18623f] text-[#fcfaf5]">
                     <p className="text-xs font-mono uppercase text-[#ffe95c] mb-1">
                       Estimated Tax Saved
                     </p>
@@ -453,7 +453,7 @@ export default function RentReliefPageContent() {
           </div>
 
           <div
-            className="p-4 rounded-xl bg-[#f5f2ec] border border-[#1a3300]/15 text-xs sm:text-sm leading-relaxed"
+            className="p-4 rounded-xl bg-[#f5f2ec] border border-[#18623f]/15 text-xs sm:text-sm leading-relaxed"
             style={{ color: INK }}
           >
             <strong>Note:</strong> The relief reduces your taxable income, so your actual tax saving depends on your
@@ -464,7 +464,7 @@ export default function RentReliefPageContent() {
       </section>
 
       {/* ── 4. Who can claim it? ── */}
-      <section className="py-20 border-t border-[#1a3300]/15" style={{ backgroundColor: "#f5f2ec" }}>
+      <section className="py-20 border-t border-[#18623f]/15" style={{ backgroundColor: "#f5f2ec" }}>
         <div className="max-w-[1200px] mx-auto px-5 md:px-10">
           <div className="max-w-3xl mb-10 space-y-3">
             <span
@@ -485,7 +485,7 @@ export default function RentReliefPageContent() {
             {ELIGIBILITY.map((item, idx) => (
               <div
                 key={idx}
-                className="p-5 rounded-xl bg-white border border-[#1a3300]/15 flex items-start gap-3.5 shadow-sm"
+                className="p-5 rounded-xl bg-white border border-[#18623f]/15 flex items-start gap-3.5 shadow-sm"
               >
                 <div
                   className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5"
@@ -517,7 +517,7 @@ export default function RentReliefPageContent() {
       </section>
 
       {/* ── 5. How MyTaxFiling works (5 steps) ── */}
-      <section className="py-24 border-t border-[#1a3300]/15" style={{ backgroundColor: CREAM }}>
+      <section className="py-24 border-t border-[#18623f]/15" style={{ backgroundColor: CREAM }}>
         <div className="max-w-[1200px] mx-auto px-5 md:px-10">
           <div className="text-center max-w-2xl mx-auto mb-16 space-y-3">
             <span
@@ -568,7 +568,7 @@ export default function RentReliefPageContent() {
       </section>
 
       {/* ── 6. Why the paperwork matters & What you get ── */}
-      <section className="py-24 border-t border-[#1a3300]/15" style={{ backgroundColor: "#f5f2ec" }}>
+      <section className="py-24 border-t border-[#18623f]/15" style={{ backgroundColor: "#f5f2ec" }}>
         <div className="max-w-[1200px] mx-auto px-5 md:px-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
             {/* Why paperwork matters */}
@@ -610,7 +610,7 @@ export default function RentReliefPageContent() {
             {/* What you get */}
             <div
               className="lg:col-span-7 rounded-2xl p-8 sm:p-10 border bg-white flex flex-col justify-between"
-              style={{ borderColor: PENCIL, boxShadow: "4px 4px 0px 0px #1a3300" }}
+              style={{ borderColor: PENCIL, boxShadow: "4px 4px 0px 0px #18623f" }}
             >
               <div>
                 <span
@@ -630,7 +630,7 @@ export default function RentReliefPageContent() {
                   {WHAT_YOU_GET.map((item) => (
                     <div
                       key={item}
-                      className="p-4 rounded-xl bg-[#f5f2ec] border border-[#1a3300]/10 flex items-start gap-3"
+                      className="p-4 rounded-xl bg-[#f5f2ec] border border-[#18623f]/10 flex items-start gap-3"
                     >
                       <div
                         className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5"
@@ -646,7 +646,7 @@ export default function RentReliefPageContent() {
                 </div>
               </div>
 
-              <div className="pt-6 mt-6 border-t border-[#1a3300]/10 flex justify-between items-center text-xs font-mono opacity-60">
+              <div className="pt-6 mt-6 border-t border-[#18623f]/10 flex justify-between items-center text-xs font-mono opacity-60">
                 <span>Section 134 compliance check included</span>
                 <span>Plain-language legal drafts</span>
               </div>
@@ -656,7 +656,7 @@ export default function RentReliefPageContent() {
       </section>
 
       {/* ── 7. FAQs (Accordion) ── */}
-      <section className="py-24 border-t border-[#1a3300]/15" style={{ backgroundColor: CREAM }}>
+      <section className="py-24 border-t border-[#18623f]/15" style={{ backgroundColor: CREAM }}>
         <div className="max-w-[860px] mx-auto px-5 md:px-10">
           <div className="text-center mb-14 space-y-3">
             <span
@@ -699,7 +699,7 @@ export default function RentReliefPageContent() {
                     />
                   </button>
                   {isOpen && (
-                    <div className="px-5 pb-6 sm:px-6 text-sm sm:text-base leading-relaxed opacity-80 border-t border-[#1a3300]/10 pt-4" style={{ color: INK }}>
+                    <div className="px-5 pb-6 sm:px-6 text-sm sm:text-base leading-relaxed opacity-80 border-t border-[#18623f]/10 pt-4" style={{ color: INK }}>
                       {faq.a}
                     </div>
                   )}
@@ -711,7 +711,7 @@ export default function RentReliefPageContent() {
       </section>
 
       {/* ── 8. Closing Call to Action & Disclaimer ── */}
-      <section className="py-20 border-t border-[#1a3300]/15" style={{ backgroundColor: MINT }}>
+      <section className="py-20 border-t border-[#18623f]/15" style={{ backgroundColor: MINT }}>
         <div className="max-w-[1200px] mx-auto px-5 md:px-10">
           <div
             className="rounded-3xl p-10 sm:p-14 text-center max-w-4xl mx-auto space-y-6"

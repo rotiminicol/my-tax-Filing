@@ -154,9 +154,9 @@ function NewDocumentRoute() {
                   </div>
                   {vehicleMode && (
                     <div className="mt-2 text-sm">
-                      {lookupStatus === "busy" && <p style={{ color: "#1a3300" }}>Looking up plate details…</p>}
+                      {lookupStatus === "busy" && <p style={{ color: "#18623f" }}>Looking up plate details…</p>}
                       {lookupStatus === "found" && (
-                        <p style={{ color: "#1a3300" }}>Plate details loaded. We'll use these for the record.</p>
+                        <p style={{ color: "#18623f" }}>Plate details loaded. We'll use these for the record.</p>
                       )}
                       {lookupStatus === "missing" && <p style={{ color: "#b91c1c" }}>{lookupError}</p>}
                     </div>

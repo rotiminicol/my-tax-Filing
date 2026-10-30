@@ -23,7 +23,7 @@ import { useState } from "react";
 
 /* Say Briefly tokens */
 const sb = {
-  forestInk: "#1a3300",
+  forestInk: "#18623f",
   cream: "#fcfaf5",
   yellow: "#ffe95c",
   mint: "#d5f5c2",
@@ -39,7 +39,7 @@ function StatusBadge({ status }: { status: Receipt["status"] }) {
     return (
       <span
         className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider"
-        style={{ backgroundColor: "#d5f5c2", color: "#1a3300" }}
+        style={{ backgroundColor: "#d5f5c2", color: "#18623f" }}
       >
         Generated
       </span>
@@ -48,7 +48,7 @@ function StatusBadge({ status }: { status: Receipt["status"] }) {
   return (
     <span
       className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider"
-      style={{ backgroundColor: "#ffe95c", color: "#1a3300" }}
+      style={{ backgroundColor: "#ffe95c", color: "#18623f" }}
     >
       Pending
     </span>
@@ -56,11 +56,11 @@ function StatusBadge({ status }: { status: Receipt["status"] }) {
 }
 
 const AVATAR_COLORS = [
-  { bg: "#d5f5c2", color: "#1a3300" },
-  { bg: "#ffe95c", color: "#1a3300" },
-  { bg: "#a8e5e5", color: "#1a3300" },
-  { bg: "#f6d0ff", color: "#1a3300" },
-  { bg: "#fcfaf5", color: "#1a3300" },
+  { bg: "#d5f5c2", color: "#18623f" },
+  { bg: "#ffe95c", color: "#18623f" },
+  { bg: "#a8e5e5", color: "#18623f" },
+  { bg: "#f6d0ff", color: "#18623f" },
+  { bg: "#fcfaf5", color: "#18623f" },
 ];
 
 function initials(name: string) {
@@ -489,7 +489,7 @@ export default function RentReceiptPage() {
                         className="w-[18px] h-[18px] rounded-full border-2 transition-all flex items-center justify-center"
                         style={{
                           backgroundColor: done ? sb.mint : active ? sb.yellow : "#ffffff",
-                          borderColor: done ? "#2B8A3E" : active ? "#1a3300" : sb.cardBorder,
+                          borderColor: done ? "#2B8A3E" : active ? "#18623f" : sb.cardBorder,
                         }}
                       >
                         {done && <CheckCircle2 className="w-3 h-3" style={{ color: "#2B8A3E" }} />}

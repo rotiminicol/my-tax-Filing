@@ -8,7 +8,7 @@ import { notify } from "@/components/Toaster";
 import { z } from "zod";
 import { Zap, Star, Check, ArrowLeft, ArrowRight } from "lucide-react";
 
-const INK = "#1a3300";
+const INK = "#18623f";
 const YELLOW = "#ffe95c";
 const TEAL = "#a8e5e5";
 const MINT = "#d5f5c2";

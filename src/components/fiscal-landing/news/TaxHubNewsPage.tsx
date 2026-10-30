@@ -21,7 +21,7 @@ import {
 import { notify } from "@/components/Toaster";
 
 const SB = {
-  ink: "#1a3300",
+  ink: "#18623f",
   cream: "#fcfaf5",
   yellow: "#ffe95c",
   mint: "#d5f5c2",
@@ -62,7 +62,7 @@ const POSTS = [
   {
     id: "1",
     badge: "Official Update",
-    badgeStyle: { bg: "#d5f5c2", color: "#1a3300" },
+    badgeStyle: { bg: "#d5f5c2", color: "#18623f" },
     author: "FIRS_Official",
     time: "2 hours ago",
     title: "New Digital E-Invoicing Requirements for 2024 Tax Season",
@@ -74,7 +74,7 @@ const POSTS = [
   {
     id: "2",
     badge: "Community Tip",
-    badgeStyle: { bg: "#ffe95c", color: "#1a3300" },
+    badgeStyle: { bg: "#ffe95c", color: "#18623f" },
     author: "AdebayoTaxPro",
     time: "5 hours ago",
     title: "How to maximize your Rent Receipt deductions if you're working from home",
@@ -292,7 +292,7 @@ export default function TaxHubNewsPage() {
                 <input
                   type="text"
                   placeholder="Start a discussion or ask a question..."
-                  className="flex-1 rounded-3xl p-4 text-sm outline-none border focus:ring-2 focus:ring-[#1a3300]/20 focus:border-[#1a3300] placeholder:text-gray-400 transition-all duration-200"
+                  className="flex-1 rounded-3xl p-4 text-sm outline-none border focus:ring-2 focus:ring-[#18623f]/20 focus:border-[#18623f] placeholder:text-gray-400 transition-all duration-200"
                   style={{ backgroundColor: "#f1f1f1", borderColor: SB.cardBorder, color: SB.ink }}
                 />
                 <button type="button" className="p-3 rounded-2xl border border-transparent hover:border-current transition-all duration-200" aria-label="Add image" style={{ color: SB.pencil }}>

@@ -1,6 +1,6 @@
 import { Bell, CloudUpload, RefreshCw, MessageCircle, FileText, Shield } from "lucide-react";
 
-const INK = "#1a3300"; const CREAM = "#fcfaf5"; const YELLOW = "#ffe95c"; const PENCIL = "#b6b6b6"; const BLUSH = "#f6d0ff";
+const INK = "#18623f"; const CREAM = "#fcfaf5"; const YELLOW = "#ffe95c"; const PENCIL = "#b6b6b6"; const BLUSH = "#f6d0ff";
 
 const features = [
   { Icon: Bell, title: "Smart Expiry Alerts", desc: "Get notified via email and SMS 90, 30, 14, and 7 days before any document expires. Never be caught off-guard.", featured: true },

@@ -37,17 +37,17 @@ export default function CookieConsent() {
       <div className="md:hidden p-4">
         <div
           className="rounded-xl border-2 p-6 flex flex-col gap-5 shadow-[0_-4px_24px_rgba(26,51,0,0.10)]"
-          style={{ backgroundColor: "#fcfaf5", borderColor: "#1a3300" }}
+          style={{ backgroundColor: "#fcfaf5", borderColor: "#18623f" }}
         >
-          <p className="text-[13px] leading-[1.65] font-sans" style={{ color: "#1a3300" }}>
+          <p className="text-[13px] leading-[1.65] font-sans" style={{ color: "#18623f" }}>
             We use tracking technologies for the correct functioning of our website. If you click "accept" you are also permitting us to use targeted advertising technologies, if you click "decline" we will not use targeted advertising technologies. If you would like to configure other preferences, click "customize settings."
           </p>
 
           <div className="flex flex-col gap-2.5">
             <button
               onClick={() => decide("customized")}
-              className="w-full py-3 px-4 rounded-md border-2 text-sm font-bold transition-all hover:bg-[#1a3300]/5 active:scale-[0.98]"
-              style={{ borderColor: "#1a3300", color: "#1a3300", backgroundColor: "transparent" }}
+              className="w-full py-3 px-4 rounded-md border-2 text-sm font-bold transition-all hover:bg-[#18623f]/5 active:scale-[0.98]"
+              style={{ borderColor: "#18623f", color: "#18623f", backgroundColor: "transparent" }}
             >
               Customize Settings
             </button>
@@ -55,14 +55,14 @@ export default function CookieConsent() {
               <button
                 onClick={() => decide("declined")}
                 className="flex-1 py-3 px-4 rounded-md text-sm font-bold transition-all hover:opacity-85 active:scale-[0.98]"
-                style={{ backgroundColor: "#1a3300", color: "#fcfaf5" }}
+                style={{ backgroundColor: "#18623f", color: "#fcfaf5" }}
               >
                 Decline
               </button>
               <button
                 onClick={() => decide("accepted")}
                 className="flex-1 py-3 px-4 rounded-md text-sm font-bold transition-all hover:opacity-90 active:scale-[0.98]"
-                style={{ backgroundColor: "#ffe95c", color: "#1a3300" }}
+                style={{ backgroundColor: "#ffe95c", color: "#18623f" }}
               >
                 Accept
               </button>
@@ -74,12 +74,12 @@ export default function CookieConsent() {
       {/* Desktop View */}
       <div
         className="hidden md:block border-t-2 shadow-[0_-4px_20px_rgba(26,51,0,0.09)]"
-        style={{ backgroundColor: "#fcfaf5", borderColor: "#1a3300" }}
+        style={{ backgroundColor: "#fcfaf5", borderColor: "#18623f" }}
       >
         <div className="flex items-center justify-between gap-10 w-full px-10 py-7">
           <p
             className="text-[14px] leading-[1.6] flex-1 font-sans"
-            style={{ color: "#1a3300" }}
+            style={{ color: "#18623f" }}
           >
             We use tracking technologies for the correct functioning of our website. If you click "accept" you are also permitting us to use targeted advertising technologies, if you click "decline" we will not use targeted advertising technologies. If you would like to configure other preferences, click "customize settings."
           </p>
@@ -87,22 +87,22 @@ export default function CookieConsent() {
           <div className="flex items-center gap-3 shrink-0">
             <button
               onClick={() => decide("customized")}
-              className="px-5 py-2.5 rounded-md border-2 text-[13px] font-bold transition-all hover:bg-[#1a3300]/5 active:scale-[0.98] whitespace-nowrap"
-              style={{ borderColor: "#1a3300", color: "#1a3300", backgroundColor: "transparent" }}
+              className="px-5 py-2.5 rounded-md border-2 text-[13px] font-bold transition-all hover:bg-[#18623f]/5 active:scale-[0.98] whitespace-nowrap"
+              style={{ borderColor: "#18623f", color: "#18623f", backgroundColor: "transparent" }}
             >
               Customize Settings
             </button>
             <button
               onClick={() => decide("declined")}
               className="px-8 py-2.5 rounded-md text-[13px] font-bold transition-all hover:opacity-85 active:scale-[0.98] whitespace-nowrap"
-              style={{ backgroundColor: "#1a3300", color: "#fcfaf5" }}
+              style={{ backgroundColor: "#18623f", color: "#fcfaf5" }}
             >
               Decline
             </button>
             <button
               onClick={() => decide("accepted")}
               className="px-8 py-2.5 rounded-md text-[13px] font-bold transition-all hover:opacity-90 active:scale-[0.98] whitespace-nowrap"
-              style={{ backgroundColor: "#ffe95c", color: "#1a3300" }}
+              style={{ backgroundColor: "#ffe95c", color: "#18623f" }}
             >
               Accept
             </button>

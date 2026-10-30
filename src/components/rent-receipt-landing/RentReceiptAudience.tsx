@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { User, Building2, Briefcase, ArrowUpRight } from "lucide-react";
 
-const INK = "#1a3300"; const CREAM = "#fcfaf5"; const YELLOW = "#ffe95c"; const PENCIL = "#b6b6b6"; const MINT = "#d5f5c2"; const TEAL = "#a8e5e5";
+const INK = "#18623f"; const CREAM = "#fcfaf5"; const YELLOW = "#ffe95c"; const PENCIL = "#b6b6b6"; const MINT = "#d5f5c2"; const TEAL = "#a8e5e5";
 
 const audiences = [
   { Icon: User, title: "Individual Landlords", desc: "Rent out your property? Generate professional receipts for each tenant and keep tidy records for your tax returns.", bg: MINT, cta: "I'm a Landlord" },

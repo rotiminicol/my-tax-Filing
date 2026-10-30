@@ -1,12 +1,12 @@
 import type { DocumentTypeConfig } from "@/lib/documentTypes";
 
 export const docInputClass =
-  "w-full px-4 py-3 rounded-xl border text-sm outline-none transition-all focus:ring-2 focus:ring-[#1a3300]/20 focus:border-[#1a3300]";
+  "w-full px-4 py-3 rounded-xl border text-sm outline-none transition-all focus:ring-2 focus:ring-[#18623f]/20 focus:border-[#18623f]";
 
 export const docInputStyle = {
   borderColor: "rgba(26,51,0,0.10)",
   backgroundColor: "#f1f1f1",
-  color: "#1a3300",
+  color: "#18623f",
 } as const;
 
 export interface DocumentFormValues {
@@ -112,7 +112,7 @@ export function DocumentFormFields({ config, values, onChange, onReferenceBlur }
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-sm font-medium mb-2" style={{ color: "#1a3300" }}>
+      <label className="block text-sm font-medium mb-2" style={{ color: "#18623f" }}>
         {label}
       </label>
       {children}

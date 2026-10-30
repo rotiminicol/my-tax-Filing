@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowUpRight, ShieldCheck } from "lucide-react";
 
-const INK = "#1a3300"; const CREAM = "#fcfaf5"; const YELLOW = "#ffe95c";
+const INK = "#18623f"; const CREAM = "#fcfaf5"; const YELLOW = "#ffe95c";
 
 export default function TaxesFinalCta() {
   return (

@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 
 const SB = {
-  ink: "#1a3300",
+  ink: "#18623f",
   cream: "#fcfaf5",
   yellow: "#ffe95c",
   mint: "#d5f5c2",
@@ -170,7 +170,7 @@ function DashboardHomePage() {
               </Link>
               <Link
                 to="/customer-dashboard/taxes"
-                className="inline-flex items-center gap-2 rounded-full bg-[#1a3300] px-5 py-3 text-sm font-semibold text-white transition-all duration-200 hover:opacity-90"
+                className="inline-flex items-center gap-2 rounded-full bg-[#18623f] px-5 py-3 text-sm font-semibold text-white transition-all duration-200 hover:opacity-90"
               >
                 <BarChart3 className="w-4 h-4" />
                 Review taxes
@@ -211,7 +211,7 @@ function DashboardHomePage() {
                       <p className="text-[11px] uppercase tracking-[0.45em] font-bold">{stat.label}</p>
                       <p className="mt-3 text-3xl font-extrabold">{stat.value}</p>
                     </div>
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/90 text-[#1a3300]">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/90 text-[#18623f]">
                       <Icon className="w-5 h-5" />
                     </div>
                   </div>
@@ -290,13 +290,13 @@ function DashboardHomePage() {
                         {deadline.authority}
                       </p>
                     </div>
-                    <span className="rounded-2xl bg-[#1a3300] px-3 py-1 text-[11px] font-bold uppercase text-white">
+                    <span className="rounded-2xl bg-[#18623f] px-3 py-1 text-[11px] font-bold uppercase text-white">
                       {deadline.status}
                     </span>
                   </div>
                   <div className="mt-4 flex items-center justify-between gap-3 text-sm" style={{ color: SB.muted }}>
                     <p>{deadline.dueDate}</p>
-                    <div className="inline-flex items-center gap-2 text-[#1a3300] font-semibold">
+                    <div className="inline-flex items-center gap-2 text-[#18623f] font-semibold">
                       <Layers className="w-4 h-4" />
                       Review
                     </div>
@@ -309,7 +309,7 @@ function DashboardHomePage() {
           <div className="space-y-6">
             <div className="rounded-[32px] border p-6 shadow-sm" style={{ backgroundColor: SB.white, borderColor: SB.cardBorder }}>
               <div className="flex items-center gap-3 mb-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-3xl bg-[#fef3c7] text-[#1a3300]">
+                <div className="flex h-14 w-14 items-center justify-center rounded-3xl bg-[#fef3c7] text-[#18623f]">
                   <Sparkles className="w-6 h-6" />
                 </div>
                 <div>

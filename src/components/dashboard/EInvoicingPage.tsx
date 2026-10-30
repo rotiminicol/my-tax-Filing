@@ -18,7 +18,7 @@ import AddClientModal from "@/components/dashboard/invoicing/AddClientModal";
 
 /* Say Briefly tokens */
 const SB = {
-  forestInk: "#1a3300",
+  forestInk: "#18623f",
   cream: "#fcfaf5",
   yellow: "#ffe95c",
   mint: "#d5f5c2",
@@ -118,7 +118,7 @@ export default function EInvoicingPage() {
       )
       .join("");
     const html = `<!DOCTYPE html><html><head><title>${draft.invoiceNumber}</title>
-      <style>body{font-family:system-ui;padding:40px;color:#1a3300}table{width:100%;border-collapse:collapse;margin:16px 0}
+      <style>body{font-family:system-ui;padding:40px;color:#18623f}table{width:100%;border-collapse:collapse;margin:16px 0}
       th,td{border:1px solid rgba(26,51,0,0.1);padding:10px;text-align:left}th{background:#fcfaf5}</style></head>
       <body><h1>Invoice ${draft.invoiceNumber}</h1>
       <p><strong>Client:</strong> ${client?.name ?? "—"}</p>
@@ -484,7 +484,7 @@ function StatCard({
       <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#6b7280" }}>
         {label}
       </span>
-      <p className="text-3xl font-bold mt-3" style={{ color: accent || "#1a3300" }}>
+      <p className="text-3xl font-bold mt-3" style={{ color: accent || "#18623f" }}>
         {value}
       </p>
       <p className="text-xs mt-2" style={{ color: "#6b7280" }}>

@@ -7,7 +7,7 @@ import {
 } from "framer-motion";
 import { Zap } from "lucide-react";
 
-const INK = "#1a3300";
+const INK = "#18623f";
 const CREAM = "#fcfaf5";
 const YELLOW = "#ffe95c";
 const PENCIL = "#b6b6b6";

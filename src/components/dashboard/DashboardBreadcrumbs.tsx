@@ -53,7 +53,7 @@ export default function DashboardBreadcrumbs({ items, className }: Props) {
                 ) : (
                   <BreadcrumbPage
                     className="font-semibold truncate max-w-[min(100%,280px)] sm:max-w-none"
-                    style={{ color: "#1a3300" }}
+                    style={{ color: "#18623f" }}
                   >
                     {isFirst && crumbs.length === 1 ? (
                       <span className="inline-flex items-center gap-1">

@@ -1,6 +1,6 @@
 import { TrendingUp, Clock, LayoutDashboard, CheckCircle2 } from "lucide-react";
 
-const INK = "#1a3300"; const CREAM = "#fcfaf5"; const YELLOW = "#ffe95c"; const PENCIL = "#b6b6b6";
+const INK = "#18623f"; const CREAM = "#fcfaf5"; const YELLOW = "#ffe95c"; const PENCIL = "#b6b6b6";
 
 const benefits = [
   { Icon: TrendingUp, title: "Get Paid Faster", desc: "Professional invoices command faster payment. Clients take formal invoices more seriously than WhatsApp messages.", stat: "3x faster" },

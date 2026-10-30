@@ -1,6 +1,6 @@
 import { Zap, ShieldCheck, Cloud, Bell, FileText, Scale } from "lucide-react";
 
-const INK = "#1a3300"; const CREAM = "#fcfaf5"; const YELLOW = "#ffe95c"; const PENCIL = "#b6b6b6"; const MINT = "#d5f5c2"; const BLUSH = "#f6d0ff";
+const INK = "#18623f"; const CREAM = "#fcfaf5"; const YELLOW = "#ffe95c"; const PENCIL = "#b6b6b6"; const MINT = "#d5f5c2"; const BLUSH = "#f6d0ff";
 
 const benefits = [
   { Icon: Zap, title: "Generate in 60 Seconds", desc: "Fill in 5 fields and download a professional PDF rent receipt immediately. No templates, no design skills needed.", bg: YELLOW },

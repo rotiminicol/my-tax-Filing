@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 
 const SB = {
-  ink: "#1a3300",
+  ink: "#18623f",
   cream: "#fcfaf5",
   yellow: "#ffe95c",
   mint: "#d5f5c2",
@@ -367,7 +367,7 @@ function SubscriptionPage() {
                         const v = e.target.value.replace(/\D/g, "").replace(/(.{4})/g, "$1 ").trim();
                         setCardNumber(v);
                       }}
-                      className="w-full p-2.5 rounded-lg text-sm border outline-none focus:ring-2 focus:ring-[#1a3300]/20"
+                      className="w-full p-2.5 rounded-lg text-sm border outline-none focus:ring-2 focus:ring-[#18623f]/20"
                       style={{ backgroundColor: SB.white, borderColor: SB.cardBorder, color: SB.ink }}
                     />
                     <input
@@ -379,7 +379,7 @@ function SubscriptionPage() {
                         const v = e.target.value.replace(/\D/g, "").replace(/^(\d{2})(\d)/, "$1/$2");
                         setCardExp(v);
                       }}
-                      className="w-full p-2.5 rounded-lg text-sm border outline-none focus:ring-2 focus:ring-[#1a3300]/20"
+                      className="w-full p-2.5 rounded-lg text-sm border outline-none focus:ring-2 focus:ring-[#18623f]/20"
                       style={{ backgroundColor: SB.white, borderColor: SB.cardBorder, color: SB.ink }}
                     />
                     <div className="flex gap-2">

@@ -4,7 +4,7 @@ import { useScrollSpy, scrollToSection } from "@/components/fiscal-landing/hooks
 import { notify } from "@/components/Toaster";
 
 const SB = {
-  ink: "#1a3300",
+  ink: "#18623f",
   cream: "#fcfaf5",
   yellow: "#ffe95c",
   mint: "#d5f5c2",

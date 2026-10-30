@@ -5,7 +5,7 @@ import { useInvoicingStore } from "@/store/invoicing";
 import { notify } from "@/components/Toaster";
 
 const SB = {
-  forestInk: "#1a3300",
+  forestInk: "#18623f",
   cream: "#fcfaf5",
   yellow: "#ffe95c",
   pencilGray: "#b6b6b6",
@@ -134,7 +134,7 @@ export default function AddClientModal({ open, onClose, onAdded }: Props) {
 }
 
 const inputClass =
-  "w-full px-4 py-3 rounded-lg border text-sm outline-none focus:ring-2 focus:ring-[#1a3300]/20 focus:border-[#1a3300]";
+  "w-full px-4 py-3 rounded-lg border text-sm outline-none focus:ring-2 focus:ring-[#18623f]/20 focus:border-[#18623f]";
 
 function Field({
   label,
@@ -147,7 +147,7 @@ function Field({
 }) {
   return (
     <div>
-      <label className="block text-sm font-medium mb-1.5" style={{ color: "#1a3300" }}>
+      <label className="block text-sm font-medium mb-1.5" style={{ color: "#18623f" }}>
         {label}
         {required && <span style={{ color: "#991b1b" }}> *</span>}
       </label>

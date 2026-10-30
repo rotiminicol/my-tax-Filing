@@ -9,7 +9,7 @@ const links = [
   { to: "/contact", label: "Contact" },
 ] as const;
 
-const INK = "#1a3300";
+const INK = "#18623f";
 const PENCIL = "#b6b6b6";
 const CREAM = "#fcfaf5";
 const YELLOW = "#ffe95c";
@@ -120,7 +120,7 @@ export default function FiscalNav() {
               backgroundColor: INK,
               color: CREAM,
               fontFamily: "Inter, system-ui, sans-serif",
-              boxShadow: "0 1px 3px rgba(26,51,0,0.10)",
+              boxShadow: "0 1px 3px rgba(24,98,63,0.10)",
             }}
           >
             Contact us

@@ -1,6 +1,6 @@
 import { Calculator, Building2, FolderOpen, TrendingUp, FileText, ShieldCheck } from "lucide-react";
 
-const INK = "#1a3300"; const YELLOW = "#ffe95c"; const PENCIL = "#b6b6b6"; const MINT = "#d5f5c2"; const TEAL = "#a8e5e5"; const BLUSH = "#f6d0ff";
+const INK = "#18623f"; const YELLOW = "#ffe95c"; const PENCIL = "#b6b6b6"; const MINT = "#d5f5c2"; const TEAL = "#a8e5e5"; const BLUSH = "#f6d0ff";
 
 const features = [
   { Icon: Calculator, title: "Personal Income Tax (PIT)", desc: "Auto-calculate your PIT using FIRS graduated rates. Pre-filled from your payslips and income sources.", bg: TEAL, featured: true },

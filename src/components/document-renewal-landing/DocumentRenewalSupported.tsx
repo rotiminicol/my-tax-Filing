@@ -1,6 +1,6 @@
 import { Car, IdCard, Building2, Landmark, Shield, Truck } from "lucide-react";
 
-const INK = "#1a3300"; const YELLOW = "#ffe95c"; const PENCIL = "#b6b6b6"; const CREAM = "#fcfaf5";
+const INK = "#18623f"; const YELLOW = "#ffe95c"; const PENCIL = "#b6b6b6"; const CREAM = "#fcfaf5";
 
 const docTypes = [
   { Icon: Car, title: "Vehicle License", bg: "#a8e5e5" },

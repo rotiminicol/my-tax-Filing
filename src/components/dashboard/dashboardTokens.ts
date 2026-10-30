@@ -3,7 +3,7 @@ export const inputBg = "#f1f1f1";
 
 /** Full Say Briefly token set for the customer dashboard. */
 export const sb = {
-  forestInk: "#1a3300",
+  forestInk: "#18623f",
   cream: "#fcfaf5",
   yellow: "#ffe95c",
   mint: "#d5f5c2",
@@ -11,9 +11,9 @@ export const sb = {
   blush: "#f6d0ff",
   pencilGray: "#b6b6b6",
   whisperGray: "#f1f1f1",
-  sidebarBg: "#1a3300",
+  sidebarBg: "#18623f",
   sidebarActive: "#ffe95c",
-  sidebarActiveText: "#1a3300",
+  sidebarActiveText: "#18623f",
   sidebarText: "rgba(252,250,245,0.85)",
   sidebarHoverBg: "rgba(255,233,92,0.12)",
   sidebarDivider: "rgba(252,250,245,0.15)",

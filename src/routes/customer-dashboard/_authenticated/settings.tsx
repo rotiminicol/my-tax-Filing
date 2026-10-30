@@ -6,7 +6,7 @@ import { FolderDown, Globe, Headphones, Shield, Trash2 } from "lucide-react";
 import AppSelect from "@/components/ui/AppSelect";
 
 const SB = {
-  ink: "#1a3300",
+  ink: "#18623f",
   cream: "#fcfaf5",
   yellow: "#ffe95c",
   mint: "#d5f5c2",
@@ -149,7 +149,7 @@ function SettingsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Field label="Full Legal Name">
                   <input
-                    className="w-full px-3.5 py-3 rounded-xl border text-sm outline-none focus:ring-2 focus:ring-[#1a3300]/20 focus:border-[#1a3300] transition-all"
+                    className="w-full px-3.5 py-3 rounded-xl border text-sm outline-none focus:ring-2 focus:ring-[#18623f]/20 focus:border-[#18623f] transition-all"
                     style={fieldStyle}
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
@@ -167,7 +167,7 @@ function SettingsPage() {
                 <Field label="Email Address">
                   <input
                     type="email"
-                    className="w-full px-3.5 py-3 rounded-xl border text-sm outline-none focus:ring-2 focus:ring-[#1a3300]/20 focus:border-[#1a3300] transition-all"
+                    className="w-full px-3.5 py-3 rounded-xl border text-sm outline-none focus:ring-2 focus:ring-[#18623f]/20 focus:border-[#18623f] transition-all"
                     style={fieldStyle}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -177,7 +177,7 @@ function SettingsPage() {
                 <Field label="Phone Number">
                   <input
                     type="tel"
-                    className="w-full px-3.5 py-3 rounded-xl border text-sm outline-none focus:ring-2 focus:ring-[#1a3300]/20 focus:border-[#1a3300] transition-all"
+                    className="w-full px-3.5 py-3 rounded-xl border text-sm outline-none focus:ring-2 focus:ring-[#18623f]/20 focus:border-[#18623f] transition-all"
                     style={fieldStyle}
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
@@ -429,7 +429,7 @@ function SettingsPage() {
               </p>
               <button
                 type="button"
-                className="px-5 py-2 rounded-xl font-bold border-2 text-sm transition-colors hover:bg-[#1a3300] hover:text-[#fcfaf5]"
+                className="px-5 py-2 rounded-xl font-bold border-2 text-sm transition-colors hover:bg-[#18623f] hover:text-[#fcfaf5]"
                 style={{ borderColor: SB.ink, color: SB.ink }}
                 onClick={() => notify.info("Support", "Live chat opening soon.")}
               >
