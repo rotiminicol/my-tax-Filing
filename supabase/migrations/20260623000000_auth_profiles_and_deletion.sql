@@ -1,45 +1,145 @@
--- Migration: Update user profile handling on signup, RLS policies, and account deletion function
+-- Migration: Complete Base Schema, User Profiles, Auth Trigger, and Account Deletion
 
--- 1. Ensure columns exist on profiles table
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_schema = 'public' AND table_name = 'profiles' AND column_name = 'phone'
-  ) THEN
-    ALTER TABLE public.profiles ADD COLUMN phone TEXT;
-  END IF;
+-- 1. Helper function for updated_at
+CREATE OR REPLACE FUNCTION public.update_updated_at_column()
+RETURNS TRIGGER LANGUAGE plpgsql SET search_path = public AS $$
+BEGIN NEW.updated_at = now(); RETURN NEW; END; $$;
 
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_schema = 'public' AND table_name = 'profiles' AND column_name = 'account_type'
-  ) THEN
-    ALTER TABLE public.profiles ADD COLUMN account_type TEXT;
-  END IF;
-
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_schema = 'public' AND table_name = 'profiles' AND column_name = 'organization'
-  ) THEN
-    ALTER TABLE public.profiles ADD COLUMN organization TEXT;
-  END IF;
-
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_schema = 'public' AND table_name = 'profiles' AND column_name = 'add_ons'
-  ) THEN
-    ALTER TABLE public.profiles ADD COLUMN add_ons TEXT[] DEFAULT '{}'::TEXT[];
-  END IF;
-
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_schema = 'public' AND table_name = 'profiles' AND column_name = 'onboarded'
-  ) THEN
-    ALTER TABLE public.profiles ADD COLUMN onboarded BOOLEAN DEFAULT false;
+-- 2. App roles enum and user_roles table
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'app_role') THEN
+    CREATE TYPE public.app_role AS ENUM ('admin', 'moderator', 'user');
   END IF;
 END $$;
 
--- 2. Enhanced handle_new_user trigger function to capture every registration field
+CREATE TABLE IF NOT EXISTS public.user_roles (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  role public.app_role NOT NULL DEFAULT 'user',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (user_id, role)
+);
+ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
+GRANT SELECT ON public.user_roles TO authenticated;
+GRANT ALL ON public.user_roles TO service_role;
+
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE tablename = 'user_roles' AND policyname = 'Users can view their own roles'
+  ) THEN
+    CREATE POLICY "Users can view their own roles" ON public.user_roles
+      FOR SELECT TO authenticated USING (auth.uid() = user_id);
+  END IF;
+END $$;
+
+-- 3. Base profiles table
+CREATE TABLE IF NOT EXISTS public.profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  email TEXT,
+  full_name TEXT,
+  phone TEXT,
+  business_name TEXT,
+  organization TEXT,
+  account_type TEXT,
+  tin TEXT,
+  nin TEXT,
+  avatar_url TEXT,
+  add_ons TEXT[] DEFAULT '{}'::TEXT[],
+  onboarded BOOLEAN DEFAULT false,
+  onboarding_step TEXT DEFAULT 'account',
+  state_of_residence TEXT,
+  employment_status TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Ensure all columns exist even if profiles already existed
+DO $$
+BEGIN
+  ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS email TEXT;
+  ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS full_name TEXT;
+  ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS phone TEXT;
+  ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS business_name TEXT;
+  ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS organization TEXT;
+  ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS account_type TEXT;
+  ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS tin TEXT;
+  ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS nin TEXT;
+  ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+  ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS add_ons TEXT[] DEFAULT '{}'::TEXT[];
+  ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS onboarded BOOLEAN DEFAULT false;
+  ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS onboarding_step TEXT DEFAULT 'account';
+  ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS state_of_residence TEXT;
+  ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS employment_status TEXT;
+END $$;
+
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.profiles TO authenticated;
+GRANT ALL ON public.profiles TO service_role;
+
+-- Profiles RLS policies
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE tablename = 'profiles' AND policyname = 'Users view own profile'
+  ) THEN
+    CREATE POLICY "Users view own profile" ON public.profiles
+      FOR SELECT TO authenticated USING (auth.uid() = id);
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE tablename = 'profiles' AND policyname = 'Users update own profile'
+  ) THEN
+    CREATE POLICY "Users update own profile" ON public.profiles
+      FOR UPDATE TO authenticated USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE tablename = 'profiles' AND policyname = 'Users insert own profile'
+  ) THEN
+    CREATE POLICY "Users insert own profile" ON public.profiles
+      FOR INSERT TO authenticated WITH CHECK (auth.uid() = id);
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE tablename = 'profiles' AND policyname = 'Users can delete own profile'
+  ) THEN
+    CREATE POLICY "Users can delete own profile" ON public.profiles
+      FOR DELETE TO authenticated USING (auth.uid() = id);
+  END IF;
+END $$;
+
+-- 4. Subscription plan enum & table (needed by trigger)
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'subscription_plan') THEN
+    CREATE TYPE public.subscription_plan AS ENUM (
+      'free', 'starter', 'deluxe', 'pro', 'premium', 'business', 'enterprise'
+    );
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'subscription_status') THEN
+    CREATE TYPE public.subscription_status AS ENUM (
+      'active', 'trialing', 'past_due', 'canceled', 'expired'
+    );
+  END IF;
+END $$;
+
+CREATE TABLE IF NOT EXISTS public.subscriptions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL UNIQUE,
+  plan public.subscription_plan NOT NULL DEFAULT 'free',
+  status public.subscription_status NOT NULL DEFAULT 'active',
+  current_period_start TIMESTAMPTZ,
+  current_period_end TIMESTAMPTZ,
+  cancel_at TIMESTAMPTZ,
+  provider TEXT,
+  provider_subscription_id TEXT,
+  billing_cycle TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+ALTER TABLE public.subscriptions ENABLE ROW LEVEL SECURITY;
+GRANT SELECT, INSERT, UPDATE ON public.subscriptions TO authenticated;
+GRANT ALL ON public.subscriptions TO service_role;
+
+-- 5. Enhanced handle_new_user trigger function
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -80,7 +180,11 @@ BEGIN
     NEW.raw_user_meta_data->>'plan'
   );
   IF v_plan_text IN ('free', 'starter', 'deluxe', 'pro', 'premium', 'business', 'enterprise') THEN
-    v_plan := v_plan_text::public.subscription_plan;
+    BEGIN
+      v_plan := v_plan_text::public.subscription_plan;
+    EXCEPTION WHEN OTHERS THEN
+      v_plan := 'free';
+    END;
   END IF;
 
   -- Extract add_ons array if provided
@@ -124,7 +228,7 @@ BEGIN
     END,
     updated_at = now();
 
-  -- Insert user role
+  -- Insert default user role
   INSERT INTO public.user_roles (user_id, role)
   VALUES (NEW.id, 'user')
   ON CONFLICT (user_id, role) DO NOTHING;
@@ -149,22 +253,7 @@ CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
--- 3. Row Level Security policies on profiles
-ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
-
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies 
-    WHERE tablename = 'profiles' AND policyname = 'Users can delete own profile'
-  ) THEN
-    CREATE POLICY "Users can delete own profile" ON public.profiles
-      FOR DELETE TO authenticated USING (auth.uid() = id);
-  END IF;
-END $$;
-
--- 4. Secure Account Deletion Function
--- Allows authenticated users to permanently delete their own account and all associated data
+-- 6. Secure Account Deletion Function
 CREATE OR REPLACE FUNCTION public.delete_user_account()
 RETURNS void
 LANGUAGE plpgsql
@@ -174,30 +263,53 @@ AS $$
 DECLARE
   v_user_id UUID;
 BEGIN
-  -- Authenticate caller
   v_user_id := auth.uid();
   IF v_user_id IS NULL THEN
     RAISE EXCEPTION 'Not authenticated';
   END IF;
 
-  -- Delete user data across all tables
-  DELETE FROM public.document_reminders WHERE user_id = v_user_id;
-  DELETE FROM public.compliance_documents WHERE user_id = v_user_id;
-  DELETE FROM public.invoice_activities WHERE user_id = v_user_id;
-  DELETE FROM public.invoices WHERE user_id = v_user_id;
-  DELETE FROM public.invoice_templates WHERE user_id = v_user_id;
-  DELETE FROM public.invoice_clients WHERE user_id = v_user_id;
-  DELETE FROM public.receipts WHERE user_id = v_user_id;
-  DELETE FROM public.subscriptions WHERE user_id = v_user_id;
-  DELETE FROM public.user_roles WHERE user_id = v_user_id;
-  DELETE FROM public.profiles WHERE id = v_user_id;
+  -- Delete user data across all tables safely
+  IF to_regclass('public.document_reminders') IS NOT NULL THEN
+    EXECUTE 'DELETE FROM public.document_reminders WHERE user_id = $1' USING v_user_id;
+  END IF;
+  IF to_regclass('public.compliance_documents') IS NOT NULL THEN
+    EXECUTE 'DELETE FROM public.compliance_documents WHERE user_id = $1' USING v_user_id;
+  END IF;
+  IF to_regclass('public.invoice_activities') IS NOT NULL THEN
+    EXECUTE 'DELETE FROM public.invoice_activities WHERE user_id = $1' USING v_user_id;
+  END IF;
+  IF to_regclass('public.invoices') IS NOT NULL THEN
+    EXECUTE 'DELETE FROM public.invoices WHERE user_id = $1' USING v_user_id;
+  END IF;
+  IF to_regclass('public.invoice_templates') IS NOT NULL THEN
+    EXECUTE 'DELETE FROM public.invoice_templates WHERE user_id = $1' USING v_user_id;
+  END IF;
+  IF to_regclass('public.invoice_clients') IS NOT NULL THEN
+    EXECUTE 'DELETE FROM public.invoice_clients WHERE user_id = $1' USING v_user_id;
+  END IF;
+  IF to_regclass('public.receipts') IS NOT NULL THEN
+    EXECUTE 'DELETE FROM public.receipts WHERE user_id = $1' USING v_user_id;
+  END IF;
+  IF to_regclass('public.feature_usage') IS NOT NULL THEN
+    EXECUTE 'DELETE FROM public.feature_usage WHERE user_id = $1' USING v_user_id;
+  END IF;
+  IF to_regclass('public.payment_transactions') IS NOT NULL THEN
+    EXECUTE 'DELETE FROM public.payment_transactions WHERE user_id = $1' USING v_user_id;
+  END IF;
+  IF to_regclass('public.subscriptions') IS NOT NULL THEN
+    EXECUTE 'DELETE FROM public.subscriptions WHERE user_id = $1' USING v_user_id;
+  END IF;
+  IF to_regclass('public.user_roles') IS NOT NULL THEN
+    EXECUTE 'DELETE FROM public.user_roles WHERE user_id = $1' USING v_user_id;
+  END IF;
+  IF to_regclass('public.profiles') IS NOT NULL THEN
+    EXECUTE 'DELETE FROM public.profiles WHERE id = $1' USING v_user_id;
+  END IF;
 
   -- Finally delete the auth user record
   DELETE FROM auth.users WHERE id = v_user_id;
 END;
 $$;
 
--- Grant execution permission to authenticated users only
 REVOKE EXECUTE ON FUNCTION public.delete_user_account() FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.delete_user_account() TO authenticated, service_role;
-

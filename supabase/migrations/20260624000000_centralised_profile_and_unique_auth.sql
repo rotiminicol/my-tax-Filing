@@ -1,49 +1,35 @@
 -- Migration: Centralised User Profile, Unique Email and Phone Constraints, Availability Check, and Phone Login Lookup
 
--- 1. Ensure profile columns exist
+-- 1. Ensure profiles table exists with all columns
+CREATE TABLE IF NOT EXISTS public.profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  email TEXT,
+  full_name TEXT,
+  phone TEXT,
+  business_name TEXT,
+  organization TEXT,
+  account_type TEXT,
+  tin TEXT,
+  nin TEXT,
+  avatar_url TEXT,
+  add_ons TEXT[] DEFAULT '{}'::TEXT[],
+  onboarded BOOLEAN DEFAULT false,
+  onboarding_step TEXT DEFAULT 'account',
+  state_of_residence TEXT,
+  employment_status TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Ensure columns exist
 DO $$
 BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_schema = 'public' AND table_name = 'profiles' AND column_name = 'phone'
-  ) THEN
-    ALTER TABLE public.profiles ADD COLUMN phone TEXT;
-  END IF;
-
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_schema = 'public' AND table_name = 'profiles' AND column_name = 'account_type'
-  ) THEN
-    ALTER TABLE public.profiles ADD COLUMN account_type TEXT;
-  END IF;
-
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_schema = 'public' AND table_name = 'profiles' AND column_name = 'organization'
-  ) THEN
-    ALTER TABLE public.profiles ADD COLUMN organization TEXT;
-  END IF;
-
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_schema = 'public' AND table_name = 'profiles' AND column_name = 'onboarding_step'
-  ) THEN
-    ALTER TABLE public.profiles ADD COLUMN onboarding_step TEXT DEFAULT 'account';
-  END IF;
-
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_schema = 'public' AND table_name = 'profiles' AND column_name = 'state_of_residence'
-  ) THEN
-    ALTER TABLE public.profiles ADD COLUMN state_of_residence TEXT;
-  END IF;
-
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_schema = 'public' AND table_name = 'profiles' AND column_name = 'employment_status'
-  ) THEN
-    ALTER TABLE public.profiles ADD COLUMN employment_status TEXT;
-  END IF;
+  ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS phone TEXT;
+  ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS account_type TEXT;
+  ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS organization TEXT;
+  ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS onboarding_step TEXT DEFAULT 'account';
+  ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS state_of_residence TEXT;
+  ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS employment_status TEXT;
 END $$;
 
 -- 2. Enforce Unique Indexes on profiles (email and phone)
@@ -231,7 +217,11 @@ BEGIN
     NEW.raw_user_meta_data->>'plan'
   );
   IF v_plan_text IN ('free', 'starter', 'deluxe', 'pro', 'premium', 'business', 'enterprise') THEN
-    v_plan := v_plan_text::public.subscription_plan;
+    BEGIN
+      v_plan := v_plan_text::public.subscription_plan;
+    EXCEPTION WHEN OTHERS THEN
+      v_plan := 'free';
+    END;
   END IF;
 
   -- Extract add_ons array if provided
@@ -300,4 +290,3 @@ DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
-
