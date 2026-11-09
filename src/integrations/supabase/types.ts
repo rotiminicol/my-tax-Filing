@@ -547,6 +547,93 @@ export type Database = {
         };
         Relationships: [];
       };
+      user_notification_preferences: {
+        Row: {
+          created_at: string;
+          email: string;
+          id: string;
+          invoice_alerts: boolean;
+          marketing_emails: boolean;
+          subscription_alerts: boolean;
+          tax_deadline_reminders: boolean;
+          transactional_emails: boolean;
+          unsubscribe_token: string | null;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          email: string;
+          id?: string;
+          invoice_alerts?: boolean;
+          marketing_emails?: boolean;
+          subscription_alerts?: boolean;
+          tax_deadline_reminders?: boolean;
+          transactional_emails?: boolean;
+          unsubscribe_token?: string | null;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          email?: string;
+          id?: string;
+          invoice_alerts?: boolean;
+          marketing_emails?: boolean;
+          subscription_alerts?: boolean;
+          tax_deadline_reminders?: boolean;
+          transactional_emails?: boolean;
+          unsubscribe_token?: string | null;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      email_logs: {
+        Row: {
+          category: string;
+          created_at: string;
+          error: string | null;
+          id: string;
+          metadata: Json | null;
+          provider: string;
+          provider_message_id: string | null;
+          recipient: string;
+          status: string;
+          subject: string;
+          template_id: string;
+          user_id: string | null;
+        };
+        Insert: {
+          category?: string;
+          created_at?: string;
+          error?: string | null;
+          id?: string;
+          metadata?: Json | null;
+          provider?: string;
+          provider_message_id?: string | null;
+          recipient: string;
+          status?: string;
+          subject: string;
+          template_id: string;
+          user_id?: string | null;
+        };
+        Update: {
+          category?: string;
+          created_at?: string;
+          error?: string | null;
+          id?: string;
+          metadata?: Json | null;
+          provider?: string;
+          provider_message_id?: string | null;
+          recipient?: string;
+          status?: string;
+          subject?: string;
+          template_id?: string;
+          user_id?: string | null;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;

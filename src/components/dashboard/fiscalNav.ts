@@ -10,6 +10,7 @@ import {
   CreditCard,
   CircleUser,
   LogOut,
+  Mail,
   type LucideIcon,
 } from "lucide-react";
 
@@ -95,6 +96,13 @@ export const SIDEBAR_ACCOUNT_NAV: SidebarNavItem[] = [
   },
   {
     type: "link",
+    to: "/customer-dashboard/email-previews",
+    label: "Email System",
+    icon: Mail,
+    prefixes: ["/customer-dashboard/email-previews"],
+  },
+  {
+    type: "link",
     to: "/customer-dashboard/settings",
     label: "Settings",
     icon: Settings,
@@ -124,8 +132,7 @@ export const SIDEBAR_ACCOUNT_NAV: SidebarNavItem[] = [
 
 /** @deprecated Use SIDEBAR_ACCOUNT_NAV */
 export const SIDEBAR_FOOTER_NAV = SIDEBAR_ACCOUNT_NAV.filter(
-  (item): item is Extract<SidebarNavItem, { type: "link" }> =>
-    item.type === "link",
+  (item): item is Extract<SidebarNavItem, { type: "link" }> => item.type === "link",
 );
 
 export const MOBILE_BOTTOM_NAV = [
@@ -161,8 +168,6 @@ export const MOBILE_BOTTOM_NAV = [
 
 export function isNavActive(pathname: string, prefixes: string[]): boolean {
   return prefixes.some((p) =>
-    p === "/customer-dashboard"
-      ? pathname === p
-      : pathname === p || pathname.startsWith(`${p}/`),
+    p === "/customer-dashboard" ? pathname === p : pathname === p || pathname.startsWith(`${p}/`),
   );
 }

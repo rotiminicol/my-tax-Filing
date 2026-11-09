@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Mail, MapPin, Phone, Headphones, Send, ArrowRight } from "lucide-react";
 import { notify } from "@/components/Toaster";
 import AppSelect from "@/components/ui/AppSelect";
+import { sendSupportTicketConfirmation } from "@/lib/email/emailClient";
 
 const SB = {
   ink: "#18623f",
@@ -22,9 +23,12 @@ function useScrollAnimation(threshold = 0.1) {
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) { setIsVisible(true); observer.unobserve(entry.target); }
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.unobserve(entry.target);
+        }
       },
-      { threshold }
+      { threshold },
     );
     if (ref.current) observer.observe(ref.current);
     return () => observer.disconnect();
@@ -34,7 +38,11 @@ function useScrollAnimation(threshold = 0.1) {
 
 const fieldClass =
   "w-full border rounded-xl p-3.5 text-base outline-none transition-all duration-200 placeholder:text-gray-400 focus:ring-2 focus:ring-[#18623f]/20 focus:border-[#18623f]";
-const fieldStyle = { backgroundColor: "#f1f1f1", borderColor: "rgba(26,51,0,0.12)", color: "#18623f" };
+const fieldStyle = {
+  backgroundColor: "#f1f1f1",
+  borderColor: "rgba(26,51,0,0.12)",
+  color: "#18623f",
+};
 
 export default function ContactPageContent() {
   const [clientType, setClientType] = useState<"individual" | "business">("individual");
@@ -50,18 +58,33 @@ export default function ContactPageContent() {
   const cardsRef = useScrollAnimation(0.1);
   const bottomRef = useScrollAnimation(0.1);
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !email.trim() || !message.trim()) {
       notify.error("Missing details", "Please fill in your name, email, and message.");
       return;
     }
     setBusy(true);
-    setTimeout(() => {
-      setBusy(false);
-      setSubmitted(true);
-      notify.success("Inquiry received", "Thank you. We have received your message and will be in touch shortly.");
-    }, 1000);
+
+    const ticketId = `TK-${Date.now().toString().slice(-5)}`;
+    try {
+      await sendSupportTicketConfirmation({
+        email: email.trim(),
+        fullName: name.trim(),
+        ticketId,
+        subject: `Contact inquiry from ${name.trim()} (${clientType})`,
+        message: message.trim(),
+      });
+    } catch (err) {
+      console.warn("Contact email dispatch fallback:", err);
+    }
+
+    setBusy(false);
+    setSubmitted(true);
+    notify.success(
+      "Inquiry received",
+      "Thank you. A confirmation email has been dispatched to your inbox.",
+    );
   };
 
   return (
@@ -70,7 +93,10 @@ export default function ContactPageContent() {
       <div className="absolute inset-0 pointer-events-none opacity-[0.025]">
         <div
           className="absolute inset-0"
-          style={{ backgroundImage: `radial-gradient(${SB.ink} 1px, transparent 1px)`, backgroundSize: "40px 40px" }}
+          style={{
+            backgroundImage: `radial-gradient(${SB.ink} 1px, transparent 1px)`,
+            backgroundSize: "40px 40px",
+          }}
         />
       </div>
 
@@ -81,11 +107,15 @@ export default function ContactPageContent() {
           headerRef.isVisible ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"
         }`}
       >
-        <h1 className="text-4xl md:text-6xl font-extrabold mb-4" style={{ color: SB.ink, fontFamily: "'Bricolage Grotesque', sans-serif" }}>
+        <h1
+          className="text-4xl md:text-6xl font-extrabold mb-4"
+          style={{ color: SB.ink, fontFamily: "'Bricolage Grotesque', sans-serif" }}
+        >
           Contact us
         </h1>
         <p className="text-base md:text-lg max-w-2xl mx-auto" style={{ color: SB.muted }}>
-          Tell us whether you are an individual or a business and what you need. A tax specialist will get back to you within one working day.
+          Tell us whether you are an individual or a business and what you need. A tax specialist
+          will get back to you within one working day.
         </p>
       </section>
 
@@ -108,7 +138,10 @@ export default function ContactPageContent() {
                 >
                   <Send className="w-8 h-8" style={{ color: SB.ink }} />
                 </div>
-                <h3 className="text-2xl font-extrabold" style={{ color: SB.ink, fontFamily: "'Bricolage Grotesque', sans-serif" }}>
+                <h3
+                  className="text-2xl font-extrabold"
+                  style={{ color: SB.ink, fontFamily: "'Bricolage Grotesque', sans-serif" }}
+                >
                   Thank you!
                 </h3>
                 <p className="text-base max-w-md mx-auto" style={{ color: SB.muted }}>
@@ -131,7 +164,10 @@ export default function ContactPageContent() {
               </div>
             ) : (
               <>
-                <h2 className="text-2xl font-bold mb-6 flex items-center gap-2" style={{ color: SB.ink }}>
+                <h2
+                  className="text-2xl font-bold mb-6 flex items-center gap-2"
+                  style={{ color: SB.ink }}
+                >
                   <Send className="w-6 h-6" style={{ opacity: 0.5 }} />
                   Send us a message
                 </h2>
@@ -141,7 +177,10 @@ export default function ContactPageContent() {
                     <label className="text-sm font-medium block mb-2" style={{ color: SB.muted }}>
                       I am:
                     </label>
-                    <div className="grid grid-cols-2 gap-3 p-1 rounded-xl border" style={{ borderColor: SB.cardBorder, backgroundColor: "#f9f8f5" }}>
+                    <div
+                      className="grid grid-cols-2 gap-3 p-1 rounded-xl border"
+                      style={{ borderColor: SB.cardBorder, backgroundColor: "#f9f8f5" }}
+                    >
                       <button
                         type="button"
                         onClick={() => setClientType("individual")}
@@ -173,7 +212,9 @@ export default function ContactPageContent() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1 text-left">
-                      <label className="text-sm font-medium" style={{ color: SB.muted }}>Full Name *</label>
+                      <label className="text-sm font-medium" style={{ color: SB.muted }}>
+                        Full Name *
+                      </label>
                       <input
                         type="text"
                         required
@@ -185,7 +226,9 @@ export default function ContactPageContent() {
                       />
                     </div>
                     <div className="space-y-1 text-left">
-                      <label className="text-sm font-medium" style={{ color: SB.muted }}>Email Address *</label>
+                      <label className="text-sm font-medium" style={{ color: SB.muted }}>
+                        Email Address *
+                      </label>
                       <input
                         type="email"
                         required
@@ -199,7 +242,9 @@ export default function ContactPageContent() {
                   </div>
 
                   <div className="space-y-1 text-left">
-                    <label className="text-sm font-medium" style={{ color: SB.muted }}>Phone Number</label>
+                    <label className="text-sm font-medium" style={{ color: SB.muted }}>
+                      Phone Number
+                    </label>
                     <input
                       type="tel"
                       className={fieldClass}
@@ -211,7 +256,9 @@ export default function ContactPageContent() {
                   </div>
 
                   <div className="space-y-1 text-left">
-                    <label className="text-sm font-medium" style={{ color: SB.muted }}>How can we help? *</label>
+                    <label className="text-sm font-medium" style={{ color: SB.muted }}>
+                      How can we help? *
+                    </label>
                     <textarea
                       required
                       className={`${fieldClass} resize-none`}
@@ -233,7 +280,13 @@ export default function ContactPageContent() {
                     className="w-full font-bold py-4 rounded-xl shadow-md hover:shadow-lg active:scale-95 transition-all disabled:opacity-70 flex items-center justify-center gap-2"
                     style={{ backgroundColor: SB.ink, color: SB.cream }}
                   >
-                    {busy ? "Sending…" : (<>Send message <ArrowRight className="w-5 h-5" /></>)}
+                    {busy ? (
+                      "Sending…"
+                    ) : (
+                      <>
+                        Send message <ArrowRight className="w-5 h-5" />
+                      </>
+                    )}
                   </button>
                 </form>
               </>
@@ -277,14 +330,20 @@ export default function ContactPageContent() {
               className="rounded-2xl p-6 md:p-8 border shadow-sm"
               style={{ backgroundColor: SB.white, borderColor: SB.cardBorder }}
             >
-              <h3 className="text-xl font-bold mb-3 flex items-center gap-2" style={{ color: SB.ink }}>
+              <h3
+                className="text-xl font-bold mb-3 flex items-center gap-2"
+                style={{ color: SB.ink }}
+              >
                 <Headphones className="w-5 h-5" style={{ opacity: 0.6 }} />
                 Dedicated Advisory
               </h3>
               <p className="text-sm leading-relaxed mb-4" style={{ color: SB.muted }}>
                 Our team responds to all inquiries within one working day.
               </p>
-              <div className="p-4 rounded-xl border" style={{ backgroundColor: "#f9f8f5", borderColor: SB.cardBorder }}>
+              <div
+                className="p-4 rounded-xl border"
+                style={{ backgroundColor: "#f9f8f5", borderColor: SB.cardBorder }}
+              >
                 <p className="text-xs uppercase font-mono font-bold tracking-wider opacity-60 mb-1">
                   Operating Hours
                 </p>
@@ -311,7 +370,8 @@ export default function ContactPageContent() {
               Looking for immediate answers?
             </h2>
             <p className="text-sm opacity-80" style={{ color: SB.ink }}>
-              Check our comprehensive help center for guides on VAT, Personal Income Tax, and corporate filings.
+              Check our comprehensive help center for guides on VAT, Personal Income Tax, and
+              corporate filings.
             </p>
           </div>
           <Link

@@ -7,6 +7,7 @@ import { formatNaira } from "@/lib/rr/format";
 import { getPlanPerks, planDisplayName } from "@/lib/planConfig";
 import { checkoutWithPaystack } from "@/lib/paystack";
 import { supabase } from "@/integrations/supabase/client";
+import { sendSubscriptionStartedEmail } from "@/lib/email/emailClient";
 import {
   CheckCircle2,
   CreditCard,
@@ -192,6 +193,18 @@ function SubscriptionPage() {
 
           // Update local & Supabase subscription
           updatePlan(plan, { billingCycle: billing });
+
+          // Send branded confirmation email
+          void sendSubscriptionStartedEmail({
+            email: user.email,
+            fullName: user.fullName,
+            userId: user.id,
+            plan,
+            amount: PLAN_DISPLAY_PRICES[plan]?.[billing] ?? "₦12,500",
+            cycle: billing,
+            reference,
+          });
+
           notify.success(
             "Payment successful!",
             `Switched to ${planDisplayName(plan)} (${billing === "annual" ? "Annual" : "Monthly"}). Reference: ${reference}`,

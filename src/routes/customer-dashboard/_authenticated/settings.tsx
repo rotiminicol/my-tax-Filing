@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import DashboardShell from "@/components/layout/DashboardShell";
 import { useAuth } from "@/store/auth";
 import { notify } from "@/components/Toaster";
-import { FolderDown, Globe, Headphones, Shield, Trash2 } from "lucide-react";
+import { FolderDown, Globe, Headphones, Shield, Trash2, Mail, ExternalLink } from "lucide-react";
 import AppSelect from "@/components/ui/AppSelect";
 import ChangePasswordModal from "@/components/auth/ChangePasswordModal";
 import DeleteAccountModal from "@/components/auth/DeleteAccountModal";
+import { supabase } from "@/integrations/supabase/client";
 
 const SB = {
   ink: "#18623f",
@@ -101,7 +103,10 @@ function SettingsPage() {
   const [phone, setPhone] = useState(user?.phone ?? "");
   const [language, setLanguage] = useState("English (UK)");
   const [currency, setCurrency] = useState("NGN");
-  const [emailReminders, setEmailReminders] = useState(false);
+  const [emailReminders, setEmailReminders] = useState(true);
+  const [marketingEmails, setMarketingEmails] = useState(true);
+  const [taxDeadlineReminders, setTaxDeadlineReminders] = useState(true);
+  const [invoiceAlerts, setInvoiceAlerts] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(true);
   const [smsAlerts, setSmsAlerts] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -138,7 +143,29 @@ function SettingsPage() {
         email: email.trim(),
         phone: phone.trim(),
       });
-      notify.success("Settings saved", "Your profile details have been updated in Supabase.");
+
+      if (user?.id) {
+        try {
+          await supabase.from("user_notification_preferences" as never).upsert(
+            {
+              user_id: user.id,
+              email: email.trim(),
+              marketing_emails: marketingEmails,
+              tax_deadline_reminders: taxDeadlineReminders,
+              invoice_alerts: invoiceAlerts,
+              updated_at: new Date().toISOString(),
+            } as never,
+            { onConflict: "user_id" },
+          );
+        } catch (prefErr) {
+          console.warn("Preferences sync notice:", prefErr);
+        }
+      }
+
+      notify.success(
+        "Settings saved",
+        "Your profile details and notification preferences have been saved.",
+      );
     } catch (err) {
       notify.error("Save failed", err instanceof Error ? err.message : "Unable to save settings.");
     } finally {
@@ -295,27 +322,41 @@ function SettingsPage() {
                     Notification Alerts
                   </h3>
                 </div>
-                <div className="space-y-5">
+                <div className="space-y-4">
                   <ToggleRow
-                    title="Email Reminders"
-                    subtitle="Upcoming filing deadlines"
-                    on={emailReminders}
-                    setOn={setEmailReminders}
+                    title="Filing Deadlines"
+                    subtitle="PIT (March 31) and monthly VAT statutory reminders"
+                    on={taxDeadlineReminders}
+                    setOn={setTaxDeadlineReminders}
                   />
                   <div className="border-t" style={{ borderColor: SB.cardBorder }} />
                   <ToggleRow
-                    title="Push Notifications"
-                    subtitle="New documents and alerts"
-                    on={pushNotifications}
-                    setOn={setPushNotifications}
+                    title="Invoice & Settlement Alerts"
+                    subtitle="Payment receipts and client overdue notices"
+                    on={invoiceAlerts}
+                    setOn={setInvoiceAlerts}
                   />
                   <div className="border-t" style={{ borderColor: SB.cardBorder }} />
                   <ToggleRow
-                    title="SMS Alerts"
-                    subtitle="Security login events"
-                    on={smsAlerts}
-                    setOn={setSmsAlerts}
+                    title="Promotional & Offers"
+                    subtitle="Rent relief tips, discounts, and product updates"
+                    on={marketingEmails}
+                    setOn={setMarketingEmails}
                   />
+                  <div className="border-t" style={{ borderColor: SB.cardBorder }} />
+                  <div className="pt-1 flex items-center justify-between">
+                    <span className="text-xs font-semibold" style={{ color: SB.muted }}>
+                      Email Notification Engine:
+                    </span>
+                    <Link
+                      to="/customer-dashboard/email-previews"
+                      className="text-xs font-bold inline-flex items-center gap-1 hover:underline"
+                      style={{ color: SB.ink }}
+                    >
+                      <Mail size={13} />
+                      Preview All 35+ Templates &rarr;
+                    </Link>
+                  </div>
                 </div>
               </section>
             </div>

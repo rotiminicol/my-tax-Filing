@@ -59,6 +59,8 @@ import SettingsPage from "@/routes/customer-dashboard/_authenticated/settings";
 import SubscriptionPage from "@/routes/customer-dashboard/_authenticated/subscription";
 import SupportPage from "@/routes/customer-dashboard/_authenticated/support";
 import NotificationsPage from "@/routes/customer-dashboard/_authenticated/notifications";
+import EmailPreviewsPage from "@/routes/customer-dashboard/_authenticated/email-previews";
+import UnsubscribePage from "@/pages/unsubscribe";
 
 // Admin pages
 import AdminIndex from "@/routes/admin/index";
@@ -81,8 +83,15 @@ function NotFoundPage() {
       <div className="max-w-md text-center">
         <p className="text-xs font-black uppercase tracking-[0.3em] text-primary">Error 404</p>
         <h1 className="mt-4 text-5xl font-black tracking-tight">Lost in transit</h1>
-        <p className="mt-4 text-base text-muted-foreground font-medium">This page is not on file with the registry.</p>
-        <a href="/" className="mt-8 inline-block text-sm font-black uppercase tracking-widest text-primary hover:opacity-80 transition-opacity">Return home →</a>
+        <p className="mt-4 text-base text-muted-foreground font-medium">
+          This page is not on file with the registry.
+        </p>
+        <a
+          href="/"
+          className="mt-8 inline-block text-sm font-black uppercase tracking-widest text-primary hover:opacity-80 transition-opacity"
+        >
+          Return home →
+        </a>
       </div>
     </div>
   );
@@ -122,10 +131,14 @@ function RootLayout() {
         <Route path="/customer-dashboard/signup" element={<SignupPage />} />
         <Route path="/customer-dashboard/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/customer-dashboard/reset-password" element={<ResetPasswordPage />} />
-        <Route path="/customer-dashboard/reset-password-success" element={<ResetPasswordSuccessPage />} />
+        <Route
+          path="/customer-dashboard/reset-password-success"
+          element={<ResetPasswordSuccessPage />}
+        />
         <Route path="/customer-dashboard/verify-email" element={<VerifyEmailPage />} />
         <Route path="/customer-dashboard/onboarding" element={<OnboardingPage />} />
         <Route path="/customer-dashboard/select-plan" element={<SelectPlanPage />} />
+        <Route path="/unsubscribe" element={<UnsubscribePage />} />
 
         {/* Customer dashboard (authenticated) */}
         <Route path="/customer-dashboard" element={<AuthenticatedLayout />}>
@@ -155,6 +168,7 @@ function RootLayout() {
           <Route path="subscription" element={<SubscriptionPage />} />
           <Route path="support" element={<SupportPage />} />
           <Route path="notifications" element={<NotificationsPage />} />
+          <Route path="email-previews" element={<EmailPreviewsPage />} />
         </Route>
 
         {/* Admin */}
