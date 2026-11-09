@@ -83,13 +83,16 @@ function LoginPage() {
 
       if (!u.emailVerified) {
         notify.info("Verify your email", "Enter the 6-character code to activate your account.");
-        navigate("/customer-dashboard/verify-email");
+        navigate(`/customer-dashboard/verify-email?email=${encodeURIComponent(u.email)}`);
         return;
       }
 
       if (plan && plan !== u.plan) {
         updatePlan(plan);
-        notify.success("Plan Updated", `Switched to the ${plan.charAt(0).toUpperCase() + plan.slice(1)} plan.`);
+        notify.success(
+          "Plan Updated",
+          `Switched to the ${plan.charAt(0).toUpperCase() + plan.slice(1)} plan.`,
+        );
       }
 
       notify.success("Welcome back", `Signed in as ${u.fullName}.`);
@@ -141,8 +144,12 @@ function LoginPage() {
                   }}
                 >
                   <div className="flex-1">
-                    <p className="text-sm font-black" style={{ color: INK }}>{item.label}</p>
-                    <p className="text-xs font-medium opacity-70" style={{ color: INK }}>{item.sub}</p>
+                    <p className="text-sm font-black" style={{ color: INK }}>
+                      {item.label}
+                    </p>
+                    <p className="text-xs font-medium opacity-70" style={{ color: INK }}>
+                      {item.sub}
+                    </p>
                   </div>
                   <ArrowRight className="w-4 h-4 opacity-40" style={{ color: INK }} />
                 </div>
@@ -219,10 +226,17 @@ function LoginPage() {
                 />
               ) : (
                 <div className="flex flex-col gap-2">
-                  <label className="text-sm font-bold" style={{ color: INK }}>Phone Number</label>
-                  <div className="flex items-center gap-2 border-b-[3px] pb-2" style={{ borderColor: INK }}>
+                  <label className="text-sm font-bold" style={{ color: INK }}>
+                    Phone Number
+                  </label>
+                  <div
+                    className="flex items-center gap-2 border-b-[3px] pb-2"
+                    style={{ borderColor: INK }}
+                  >
                     <NigeriaFlag />
-                    <span className="text-base font-bold" style={{ color: INK }}>+234</span>
+                    <span className="text-base font-bold" style={{ color: INK }}>
+                      +234
+                    </span>
                     <input
                       type="tel"
                       autoComplete="tel"
@@ -241,7 +255,9 @@ function LoginPage() {
 
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-bold" style={{ color: INK }}>Password</span>
+                  <span className="text-sm font-bold" style={{ color: INK }}>
+                    Password
+                  </span>
                   <Link
                     to="/customer-dashboard/forgot-password"
                     className="text-[11px] font-black uppercase tracking-[0.15em] hover:opacity-60 transition-opacity"
@@ -263,7 +279,11 @@ function LoginPage() {
                 {password && unmetRequirements.length > 0 && (
                   <div className="flex flex-col gap-1 mt-2">
                     {unmetRequirements.map((req, i) => (
-                      <p key={i} className="text-[11px] font-semibold opacity-60" style={{ color: INK }}>
+                      <p
+                        key={i}
+                        className="text-[11px] font-semibold opacity-60"
+                        style={{ color: INK }}
+                      >
                         {req.text}
                       </p>
                     ))}

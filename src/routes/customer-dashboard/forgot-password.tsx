@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { ArrowLeft, ArrowRight, CheckCircle, Mail, Copy } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle, Mail, KeyRound } from "lucide-react";
 import AuthFocusedLayout from "@/components/auth/AuthFocusedLayout";
 import { useAuth } from "@/store/auth";
 import { notify } from "@/components/Toaster";
@@ -15,26 +15,30 @@ function ForgotPage() {
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | undefined>();
   const [sent, setSent] = useState(false);
-  const [demoToken, setDemoToken] = useState<string | null>(null);
-
-  const copyToken = () => {
-    if (demoToken) {
-      navigator.clipboard.writeText(demoToken);
-      notify.success("Copied", "Reset token copied to clipboard");
-    }
-  };
+  const [busy, setBusy] = useState(false);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    const cleanEmail = email.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
       setError("Enter a valid email address.");
       return;
     }
     setError(undefined);
-    await requestReset(email);
-    setSent(true);
-    setDemoToken(null);
-    notify.info("Check your inbox", "If an account exists, a reset link was sent.");
+    setBusy(true);
+
+    try {
+      await requestReset(cleanEmail);
+      setSent(true);
+      notify.info(
+        "Check your inbox",
+        "If an account exists, a reset code and link have been sent.",
+      );
+    } catch {
+      notify.error("Request failed", "Unable to initiate password reset. Please try again.");
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -70,8 +74,12 @@ function ForgotPage() {
                   >
                     Forgot Password?
                   </h1>
-                  <p className="text-sm font-semibold mt-2 leading-relaxed opacity-60" style={{ color: INK }}>
-                    No worries. Enter your email and we'll send you a reset link.
+                  <p
+                    className="text-sm font-semibold mt-2 leading-relaxed opacity-60"
+                    style={{ color: INK }}
+                  >
+                    No worries. Enter your registered email and we'll send you a verification code
+                    and recovery link.
                   </p>
                 </div>
               </div>
@@ -86,7 +94,10 @@ function ForgotPage() {
                     type="email"
                     required
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (error) setError(undefined);
+                    }}
                     placeholder="you@example.com"
                     className="w-full border-b-[3px] bg-transparent pb-2 text-base font-bold outline-none transition-all"
                     style={{ borderColor: INK, color: INK }}
@@ -96,7 +107,8 @@ function ForgotPage() {
 
                 <button
                   type="submit"
-                  className="group w-full h-12 font-black uppercase tracking-[0.15em] flex items-center justify-center gap-2 transition-all hover:opacity-80 active:scale-95"
+                  disabled={busy}
+                  className="group w-full h-12 font-black uppercase tracking-[0.15em] flex items-center justify-center gap-2 transition-all hover:opacity-80 active:scale-95 disabled:opacity-40"
                   style={{
                     fontFamily: "'Roboto Mono', monospace",
                     fontSize: 11,
@@ -105,7 +117,7 @@ function ForgotPage() {
                     borderRadius: 6,
                   }}
                 >
-                  Send Reset Link
+                  {busy ? "Sending…" : "Send Reset Link & OTP"}
                   <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                 </button>
 
@@ -133,7 +145,7 @@ function ForgotPage() {
                   className="text-[10px] font-black uppercase tracking-[0.25em] mb-1 opacity-50"
                   style={{ fontFamily: "'Roboto Mono', monospace", color: INK }}
                 >
-                  Email Sent
+                  Code & Link Dispatched
                 </p>
                 <h2
                   className="text-2xl font-black uppercase"
@@ -141,78 +153,51 @@ function ForgotPage() {
                 >
                   Check Your Inbox
                 </h2>
-                <p className="text-sm font-semibold mt-2 leading-relaxed opacity-60" style={{ color: INK }}>
-                  We sent a reset link to{" "}
+                <p
+                  className="text-sm font-semibold mt-2 leading-relaxed opacity-60"
+                  style={{ color: INK }}
+                >
+                  We sent a recovery email with a verification OTP to{" "}
                   <span className="font-black opacity-100">{email}</span>.
                 </p>
               </div>
 
-              {demoToken && (
-                <div
-                  className="p-4"
+              <div className="flex flex-col gap-3">
+                <button
+                  type="button"
+                  onClick={() =>
+                    navigate(
+                      `/customer-dashboard/reset-password?email=${encodeURIComponent(email.trim().toLowerCase())}`,
+                    )
+                  }
+                  className="group w-full h-12 font-black uppercase tracking-[0.15em] flex items-center justify-center gap-2 transition-all hover:opacity-80 active:scale-95"
                   style={{
-                    backgroundColor: "rgba(26,51,0,0.04)",
-                    borderRadius: 8,
-                    border: "1.5px solid rgba(26,51,0,0.10)",
+                    fontFamily: "'Roboto Mono', monospace",
+                    fontSize: 11,
+                    backgroundColor: YELLOW,
+                    color: INK,
+                    borderRadius: 6,
                   }}
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <p
-                      className="text-[10px] font-black uppercase tracking-[0.18em] opacity-50"
-                      style={{ fontFamily: "'Roboto Mono', monospace", color: INK }}
-                    >
-                      Demo Reset Token
-                    </p>
-                    <button
-                      type="button"
-                      onClick={copyToken}
-                      className="p-1 rounded hover:opacity-60 transition-opacity"
-                      style={{ color: INK }}
-                      title="Copy token"
-                    >
-                      <Copy className="w-4 h-4" />
-                    </button>
-                  </div>
-                  <p
-                    className="font-mono text-xs break-all mb-3 opacity-60"
-                    style={{ color: INK }}
-                  >
-                    {demoToken}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => navigate("/customer-dashboard/reset-password")}
-                    className="w-full h-10 font-black uppercase tracking-[0.15em] text-[10px] flex items-center justify-center gap-2 transition-all hover:opacity-80"
-                    style={{
-                      fontFamily: "'Roboto Mono', monospace",
-                      backgroundColor: INK,
-                      color: YELLOW,
-                      borderRadius: 6,
-                    }}
-                  >
-                    Continue to Reset Password
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              )}
+                  <KeyRound className="w-4 h-4" />
+                  Enter Reset OTP Code
+                </button>
 
-              <button
-                type="button"
-                onClick={() => { setSent(false); setDemoToken(null); }}
-                className="w-full h-12 font-black uppercase tracking-[0.15em] flex items-center justify-center gap-2 transition-all hover:opacity-80 active:scale-95"
-                style={{
-                  fontFamily: "'Roboto Mono', monospace",
-                  fontSize: 11,
-                  backgroundColor: YELLOW,
-                  color: INK,
-                  borderRadius: 6,
-                }}
-              >
-                Resend Email
-              </button>
+                <button
+                  type="button"
+                  onClick={() => setSent(false)}
+                  className="w-full h-10 font-black uppercase tracking-[0.15em] flex items-center justify-center gap-2 transition-all hover:opacity-70 text-[11px]"
+                  style={{
+                    fontFamily: "'Roboto Mono', monospace",
+                    color: INK,
+                  }}
+                >
+                  Resend Email
+                </button>
+              </div>
 
               <p className="text-xs font-semibold text-center opacity-50" style={{ color: INK }}>
-                Didn't receive it? Check your spam folder.
+                Didn't receive it? Check your spam or junk folder.
               </p>
 
               <Link

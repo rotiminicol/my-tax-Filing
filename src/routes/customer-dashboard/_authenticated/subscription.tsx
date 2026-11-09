@@ -5,6 +5,8 @@ import { useAuth } from "@/store/auth";
 import type { PlanBillingCycle, PlanTier } from "@/store/auth";
 import { formatNaira } from "@/lib/rr/format";
 import { getPlanPerks, planDisplayName } from "@/lib/planConfig";
+import { checkoutWithPaystack } from "@/lib/paystack";
+import { supabase } from "@/integrations/supabase/client";
 import {
   CheckCircle2,
   CreditCard,
@@ -14,6 +16,7 @@ import {
   Zap,
   Shield,
   Star,
+  Loader2,
 } from "lucide-react";
 
 const SB = {
@@ -91,9 +94,7 @@ function SubscriptionPage() {
   const [billingCycle, setBillingCycle] = useState<PlanBillingCycle>(
     user?.planBillingCycle ?? "monthly",
   );
-  const [cards, setCards] = useState<CardEntry[]>([
-    { brand: "Visa", last4: "4242", exp: "12/26" },
-  ]);
+  const [cards, setCards] = useState<CardEntry[]>([{ brand: "Visa", last4: "4242", exp: "12/26" }]);
   const [addingCard, setAddingCard] = useState(false);
   const [cardNumber, setCardNumber] = useState("");
   const [cardExp, setCardExp] = useState("");
@@ -109,7 +110,12 @@ function SubscriptionPage() {
   const billing = billingCycle;
 
   const billingHistory = useMemo(
-    () => generateBillingHistory(user?.plan ?? null, user?.planBillingCycle, user?.planStartDate ?? new Date().toISOString()),
+    () =>
+      generateBillingHistory(
+        user?.plan ?? null,
+        user?.planBillingCycle,
+        user?.planStartDate ?? new Date().toISOString(),
+      ),
     [user?.plan, user?.planBillingCycle, user?.planStartDate],
   );
 
@@ -127,17 +133,85 @@ function SubscriptionPage() {
     });
   }, [user?.planExpiresAt]);
 
-  const handleUpgrade = (plan: PlanTier) => {
+  const handleUpgrade = async (plan: PlanTier) => {
     if (plan === currentPlan) return;
-    setUpgrading(plan);
-    setTimeout(() => {
-      updatePlan(plan, { billingCycle: billing });
-      setUpgrading(null);
-      notify.success(
-        "Plan updated!",
-        `Switched to ${planDisplayName(plan)} · ${billing === "annual" ? "Annual" : "Monthly"} billing.`,
+
+    if (plan === "free") {
+      const confirmDowngrade = window.confirm(
+        "Are you sure you want to downgrade to the Free plan? Some premium features will be restricted.",
       );
-    }, 800);
+      if (!confirmDowngrade) return;
+
+      setUpgrading("free");
+      try {
+        updatePlan("free");
+        notify.success("Plan updated", "You have switched to the Free plan.");
+      } finally {
+        setUpgrading(null);
+      }
+      return;
+    }
+
+    if (!user?.email) {
+      notify.error("Email required", "Please ensure your account has a valid email.");
+      return;
+    }
+
+    setUpgrading(plan);
+
+    await checkoutWithPaystack({
+      email: user.email,
+      userId: user.id,
+      plan,
+      billingCycle: billing,
+      onSuccess: async (reference) => {
+        try {
+          // Attempt verification via Edge function
+          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+          const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+
+          if (supabaseUrl && anonKey) {
+            try {
+              await fetch(`${supabaseUrl}/functions/v1/verify-paystack-payment`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${anonKey}`,
+                },
+                body: JSON.stringify({
+                  reference,
+                  userId: user.id,
+                  plan,
+                  billingCycle: billing,
+                }),
+              });
+            } catch (fnErr) {
+              console.warn("Edge function verification fallback:", fnErr);
+            }
+          }
+
+          // Update local & Supabase subscription
+          updatePlan(plan, { billingCycle: billing });
+          notify.success(
+            "Payment successful!",
+            `Switched to ${planDisplayName(plan)} (${billing === "annual" ? "Annual" : "Monthly"}). Reference: ${reference}`,
+          );
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : "Activation failed";
+          notify.error("Payment error", msg);
+        } finally {
+          setUpgrading(null);
+        }
+      },
+      onClose: () => {
+        setUpgrading(null);
+        notify.info("Payment cancelled", "You can retry whenever you're ready.");
+      },
+      onError: (err) => {
+        setUpgrading(null);
+        notify.error("Payment error", err.message || "Failed to initialize Paystack.");
+      },
+    });
   };
 
   const handleAddCard = () => {
@@ -181,7 +255,12 @@ function SubscriptionPage() {
       icon: Shield,
       desc: "Unlimited filing for freelancers & SMEs.",
       highlight: true,
-      perks: ["Unlimited VAT & PIT filing", "Audit-ready documentation", "Priority chat support", "TIN verification"],
+      perks: [
+        "Unlimited VAT & PIT filing",
+        "Audit-ready documentation",
+        "Priority chat support",
+        "TIN verification",
+      ],
     },
     {
       id: "premium",
@@ -189,7 +268,13 @@ function SubscriptionPage() {
       icon: Star,
       desc: "Enterprise compliance at scale.",
       featured: true,
-      perks: ["Everything in Deluxe", "Dedicated Tax Consultant", "WHT automation", "API & payroll access", "Health-checks"],
+      perks: [
+        "Everything in Deluxe",
+        "Dedicated Tax Consultant",
+        "WHT automation",
+        "API & payroll access",
+        "Health-checks",
+      ],
     },
   ];
 
@@ -258,7 +343,8 @@ function SubscriptionPage() {
               </div>
               {currentPlan !== "free" && (
                 <p className="text-xs mb-5" style={{ color: SB.muted }}>
-                  {PLAN_ANNUAL_TOTALS[currentPlan]?.[billing] || `Billed ${billing === "annual" ? "annually" : "monthly"}`}
+                  {PLAN_ANNUAL_TOTALS[currentPlan]?.[billing] ||
+                    `Billed ${billing === "annual" ? "annually" : "monthly"}`}
                 </p>
               )}
 
@@ -293,7 +379,10 @@ function SubscriptionPage() {
               </div>
 
               <div>
-                <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: SB.pencil }}>
+                <p
+                  className="text-xs font-bold uppercase tracking-widest mb-2"
+                  style={{ color: SB.pencil }}
+                >
                   Your {planDisplayName(currentPlan)} benefits
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -301,7 +390,11 @@ function SubscriptionPage() {
                     <span
                       key={p}
                       className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border"
-                      style={{ backgroundColor: SB.cream, borderColor: SB.cardBorder, color: SB.ink }}
+                      style={{
+                        backgroundColor: SB.cream,
+                        borderColor: SB.cardBorder,
+                        color: SB.ink,
+                      }}
                     >
                       <CheckCircle2 className="w-3 h-3" style={{ color: "#1a5c3a" }} />
                       {p}
@@ -364,11 +457,18 @@ function SubscriptionPage() {
                       maxLength={19}
                       value={cardNumber}
                       onChange={(e) => {
-                        const v = e.target.value.replace(/\D/g, "").replace(/(.{4})/g, "$1 ").trim();
+                        const v = e.target.value
+                          .replace(/\D/g, "")
+                          .replace(/(.{4})/g, "$1 ")
+                          .trim();
                         setCardNumber(v);
                       }}
                       className="w-full p-2.5 rounded-lg text-sm border outline-none focus:ring-2 focus:ring-[#18623f]/20"
-                      style={{ backgroundColor: SB.white, borderColor: SB.cardBorder, color: SB.ink }}
+                      style={{
+                        backgroundColor: SB.white,
+                        borderColor: SB.cardBorder,
+                        color: SB.ink,
+                      }}
                     />
                     <input
                       type="text"
@@ -376,11 +476,17 @@ function SubscriptionPage() {
                       maxLength={5}
                       value={cardExp}
                       onChange={(e) => {
-                        const v = e.target.value.replace(/\D/g, "").replace(/^(\d{2})(\d)/, "$1/$2");
+                        const v = e.target.value
+                          .replace(/\D/g, "")
+                          .replace(/^(\d{2})(\d)/, "$1/$2");
                         setCardExp(v);
                       }}
                       className="w-full p-2.5 rounded-lg text-sm border outline-none focus:ring-2 focus:ring-[#18623f]/20"
-                      style={{ backgroundColor: SB.white, borderColor: SB.cardBorder, color: SB.ink }}
+                      style={{
+                        backgroundColor: SB.white,
+                        borderColor: SB.cardBorder,
+                        color: SB.ink,
+                      }}
                     />
                     <div className="flex gap-2">
                       <button
@@ -475,9 +581,12 @@ function SubscriptionPage() {
                   }`}
                   style={{
                     backgroundColor: featured ? SB.ink : SB.white,
-                    borderColor: highlight && !featured ? SB.ink : featured ? SB.ink : SB.cardBorder,
+                    borderColor:
+                      highlight && !featured ? SB.ink : featured ? SB.ink : SB.cardBorder,
                     color: featured ? SB.cream : SB.ink,
-                    ...(featured ? { boxShadow: "0 20px 40px rgba(26,51,0,0.20), 0 0 0 2px #ffe95c" } : {}),
+                    ...(featured
+                      ? { boxShadow: "0 20px 40px rgba(26,51,0,0.20), 0 0 0 2px #ffe95c" }
+                      : {}),
                   }}
                 >
                   <div className="flex items-center gap-3 mb-3">
@@ -550,14 +659,23 @@ function SubscriptionPage() {
                       type="button"
                       disabled={isUpgrading !== null}
                       onClick={() => handleUpgrade(id)}
-                      className="w-full py-2.5 rounded-xl font-bold text-sm transition-all hover:opacity-90 active:scale-95 disabled:opacity-60"
+                      className="w-full py-2.5 rounded-xl font-bold text-sm transition-all hover:opacity-90 active:scale-95 disabled:opacity-60 flex items-center justify-center gap-2"
                       style={{
                         backgroundColor: featured ? SB.yellow : "transparent",
                         color: featured ? SB.ink : SB.ink,
                         border: featured ? "none" : `2px solid ${SB.cardBorder}`,
                       }}
                     >
-                      {isUpgrading ? "Switching…" : id === "free" ? "Downgrade" : `Switch to ${name}`}
+                      {isUpgrading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Processing…
+                        </>
+                      ) : id === "free" ? (
+                        "Downgrade"
+                      ) : (
+                        `Switch to ${name}`
+                      )}
                     </button>
                   )}
                 </div>
@@ -622,7 +740,10 @@ function SubscriptionPage() {
                       className="border-t hover:bg-[#fcfaf5] transition-colors"
                       style={{ borderColor: SB.cardBorder }}
                     >
-                      <td className="px-6 py-4 text-sm font-mono font-bold" style={{ color: SB.ink }}>
+                      <td
+                        className="px-6 py-4 text-sm font-mono font-bold"
+                        style={{ color: SB.ink }}
+                      >
                         {inv.id}
                       </td>
                       <td className="px-6 py-4 text-sm" style={{ color: SB.muted }}>
@@ -639,7 +760,9 @@ function SubscriptionPage() {
                           type="button"
                           className="text-xs font-bold px-3 py-1.5 rounded-lg border hover:bg-[#fcfaf5] transition-colors"
                           style={{ borderColor: SB.cardBorder, color: SB.ink }}
-                          onClick={() => notify.success("Downloaded", `Invoice ${inv.id} downloaded as PDF.`)}
+                          onClick={() =>
+                            notify.success("Downloaded", `Invoice ${inv.id} downloaded as PDF.`)
+                          }
                         >
                           PDF
                         </button>

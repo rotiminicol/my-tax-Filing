@@ -1,6 +1,6 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, CheckCircle, Circle, ArrowRight } from "lucide-react";
+import { ArrowLeft, CheckCircle, Circle, ArrowRight, Loader2 } from "lucide-react";
 import AuthFocusedLayout from "@/components/auth/AuthFocusedLayout";
 import AuthInput from "@/components/auth/AuthInput";
 import { useAuth } from "@/store/auth";
@@ -26,9 +26,17 @@ const BAR_COLORS = ["#ef4444", "#f97316", "#84cc16", INK];
 
 function ResetPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const reset = useAuth((s) => s.resetPassword);
-  const [canReset, setCanReset] = useState(false);
+
+  const queryEmail = searchParams.get("email");
+  const storedEmail =
+    typeof window !== "undefined" ? sessionStorage.getItem("mytaxfiling-reset-email") : null;
+
+  const [hasSession, setHasSession] = useState(false);
   const [checking, setChecking] = useState(true);
+  const [email, setEmail] = useState(queryEmail || storedEmail || "");
+  const [otp, setOtp] = useState("");
   const [pwd, setPwd] = useState("");
   const [confirm, setConfirm] = useState("");
   const [errs, setErrs] = useState<Record<string, string>>({});
@@ -38,12 +46,18 @@ function ResetPage() {
     let mounted = true;
     supabase.auth.getSession().then(({ data }) => {
       if (!mounted) return;
-      setCanReset(!!data.session);
+      if (data.session) {
+        setHasSession(true);
+      }
       setChecking(false);
     });
+
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") setCanReset(true);
+      if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") {
+        setHasSession(true);
+      }
     });
+
     return () => {
       mounted = false;
       sub.subscription.unsubscribe();
@@ -72,54 +86,45 @@ function ResetPage() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const next: Record<string, string> = {};
-    if (!canReset) next.token = "Invalid or missing reset link. Request a new one.";
+
+    if (!hasSession) {
+      if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+        next.email = "Please enter your registered email address.";
+      }
+      if (!otp.trim()) {
+        next.otp = "Please enter the 6-digit recovery OTP from your email.";
+      }
+    }
+
     if (pwd.length < 8) next.pwd = "Must be at least 8 characters.";
     else if (!/[A-Z]/.test(pwd)) next.pwd = "Must include at least one uppercase letter.";
     else if (!/[a-z]/.test(pwd)) next.pwd = "Must include at least one lowercase letter.";
     else if (!/[0-9]/.test(pwd)) next.pwd = "Must include at least one number.";
-    else if (!/[!@#$%^&*(),.?":{}|<>_\-+=[\]\\;/]/.test(pwd)) next.pwd = "Must include at least one special character.";
+    else if (!/[!@#$%^&*(),.?":{}|<>_\-+=[\]\\;/]/.test(pwd))
+      next.pwd = "Must include at least one special character.";
+
     if (pwd !== confirm) next.confirm = "Passwords do not match.";
+
     setErrs(next);
     if (Object.keys(next).length) return;
 
     setBusy(true);
-    const ok = await reset("", pwd);
-    setBusy(false);
-    if (!ok) {
-      notify.error("Invalid token", "This reset link is invalid or has expired.");
-      return;
-    }
-    notify.success("Password updated", "Your new password is ready to use.");
-    navigate("/customer-dashboard/reset-password-success");
-  };
+    try {
+      // If we don't have an active session, pass the OTP code and email
+      const tokenToPass = hasSession ? "" : otp.trim();
+      const emailToPass = hasSession ? undefined : email.trim().toLowerCase();
 
-  if (!checking && !canReset) {
-    return (
-      <AuthFocusedLayout headerVariant="reset">
-        <div className="flex-grow flex items-center justify-center px-4 py-10">
-          <div
-            className="w-full max-w-[440px] p-8 text-center"
-            style={{
-              backgroundColor: "#fff",
-              borderRadius: 12,
-              border: "1.5px solid rgba(26,51,0,0.10)",
-            }}
-          >
-            <p className="text-sm font-semibold mb-4 opacity-60" style={{ color: INK }}>
-              This reset link is invalid or has expired.
-            </p>
-            <Link
-              to="/customer-dashboard/forgot-password"
-              className="font-black underline hover:no-underline text-sm"
-              style={{ color: INK }}
-            >
-              Request a new reset link
-            </Link>
-          </div>
-        </div>
-      </AuthFocusedLayout>
-    );
-  }
+      await reset(tokenToPass, pwd, emailToPass);
+      notify.success("Password updated", "Your new password is now active.");
+      navigate("/customer-dashboard/reset-password-success");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Password reset failed. Please try again.";
+      notify.error("Reset Failed", msg);
+      setErrs({ form: msg });
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const label = strengthLabel();
 
@@ -144,15 +149,19 @@ function ResetPage() {
                 <br />
                 Your Gateway.
               </h1>
-              <p className="text-sm font-semibold mt-3 leading-relaxed opacity-60" style={{ color: INK }}>
-                Create a strong, unique password to keep your tax data encrypted and safe.
+              <p
+                className="text-sm font-semibold mt-3 leading-relaxed opacity-60"
+                style={{ color: INK }}
+              >
+                Create a strong, unique password to keep your tax compliance and financial records
+                protected.
               </p>
             </div>
 
             <div className="flex flex-col gap-3">
               {[
                 { bg: TEAL, title: "End-to-End Encryption", sub: "256-bit AES for all documents" },
-                { bg: MINT, title: "Secure Recovery", sub: "Multi-factor verification standards" },
+                { bg: MINT, title: "Secure Recovery", sub: "OTP & multi-factor verification" },
                 { bg: BLUSH, title: "Zero Data Leaks", sub: "NDPR-compliant infrastructure" },
               ].map((item) => (
                 <div
@@ -164,8 +173,12 @@ function ResetPage() {
                     border: "1.5px solid rgba(26,51,0,0.10)",
                   }}
                 >
-                  <p className="text-sm font-black" style={{ color: INK }}>{item.title}</p>
-                  <p className="text-xs font-semibold opacity-60" style={{ color: INK }}>{item.sub}</p>
+                  <p className="text-sm font-black" style={{ color: INK }}>
+                    {item.title}
+                  </p>
+                  <p className="text-xs font-semibold opacity-60" style={{ color: INK }}>
+                    {item.sub}
+                  </p>
                 </div>
               ))}
             </div>
@@ -185,7 +198,7 @@ function ResetPage() {
                 className="text-[10px] font-black uppercase tracking-[0.25em] mb-1 opacity-50"
                 style={{ fontFamily: "'Roboto Mono', monospace", color: INK }}
               >
-                New Password
+                Security Check
               </p>
               <h2
                 className="text-2xl font-black uppercase"
@@ -194,11 +207,48 @@ function ResetPage() {
                 Reset Password
               </h2>
               <p className="text-sm font-semibold mt-1.5 opacity-60" style={{ color: INK }}>
-                Choose a password you haven't used before.
+                {hasSession
+                  ? "Enter and confirm your new password."
+                  : "Enter the OTP code sent to your email to verify your identity and set a new password."}
               </p>
             </div>
 
+            {errs.form && (
+              <div className="p-3 mb-4 rounded-lg bg-red-50 border border-red-200 text-xs font-semibold text-red-600">
+                {errs.form}
+              </div>
+            )}
+
             <form onSubmit={submit} className="flex flex-col gap-5" noValidate>
+              {!hasSession && (
+                <>
+                  <AuthInput
+                    label="Email Address"
+                    type="email"
+                    placeholder="you@example.com"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (errs.email) setErrs({ ...errs, email: "" });
+                    }}
+                    error={errs.email}
+                    autoComplete="email"
+                  />
+
+                  <AuthInput
+                    label="Password Reset OTP"
+                    placeholder="Enter 6-digit recovery code"
+                    value={otp}
+                    onChange={(e) => {
+                      setOtp(e.target.value);
+                      if (errs.otp) setErrs({ ...errs, otp: "" });
+                    }}
+                    error={errs.otp}
+                    autoComplete="one-time-code"
+                  />
+                </>
+              )}
+
               <div>
                 <AuthInput
                   label="New Password"
@@ -206,7 +256,10 @@ function ResetPage() {
                   autoComplete="new-password"
                   placeholder="••••••••"
                   value={pwd}
-                  onChange={(e) => setPwd(e.target.value)}
+                  onChange={(e) => {
+                    setPwd(e.target.value);
+                    if (errs.pwd) setErrs({ ...errs, pwd: "" });
+                  }}
                   error={errs.pwd}
                   trailingIcon="password"
                 />
@@ -214,7 +267,11 @@ function ResetPage() {
                 {pwd && unmetRequirements.length > 0 && (
                   <div className="flex flex-col gap-1 mt-2">
                     {unmetRequirements.map((req, i) => (
-                      <p key={i} className="text-[11px] font-semibold opacity-60" style={{ color: INK }}>
+                      <p
+                        key={i}
+                        className="text-[11px] font-semibold opacity-60"
+                        style={{ color: INK }}
+                      >
                         {req.text}
                       </p>
                     ))}
@@ -229,9 +286,10 @@ function ResetPage() {
                         key={i}
                         className="flex-1 rounded-full transition-all duration-300"
                         style={{
-                          backgroundColor: pwd.length && i < score
-                            ? BAR_COLORS[Math.min(score - 1, 3)]
-                            : "rgba(26,51,0,0.10)",
+                          backgroundColor:
+                            pwd.length && i < score
+                              ? BAR_COLORS[Math.min(score - 1, 3)]
+                              : "rgba(26,51,0,0.10)",
                         }}
                       />
                     ))}
@@ -261,10 +319,11 @@ function ResetPage() {
                             opacity: item.check ? 1 : 0.3,
                           }}
                         >
-                          {item.check
-                            ? <CheckCircle className="w-3 h-3" />
-                            : <Circle className="w-3 h-3" />
-                          }
+                          {item.check ? (
+                            <CheckCircle className="w-3 h-3" />
+                          ) : (
+                            <Circle className="w-3 h-3" />
+                          )}
                           {item.text}
                         </span>
                       ))}
@@ -280,7 +339,10 @@ function ResetPage() {
                   autoComplete="new-password"
                   placeholder="••••••••"
                   value={confirm}
-                  onChange={(e) => setConfirm(e.target.value)}
+                  onChange={(e) => {
+                    setConfirm(e.target.value);
+                    if (errs.confirm) setErrs({ ...errs, confirm: "" });
+                  }}
                   error={errs.confirm}
                   trailingIcon="password"
                 />
@@ -303,18 +365,37 @@ function ResetPage() {
                   borderRadius: 6,
                 }}
               >
-                {busy ? "Updating…" : "Update Password"}
-                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                {busy ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Updating…
+                  </>
+                ) : (
+                  <>
+                    Update Password
+                    <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                  </>
+                )}
               </button>
 
-              <Link
-                to="/customer-dashboard/login"
-                className="flex items-center justify-center gap-2 text-[11px] font-black uppercase tracking-[0.15em] hover:opacity-60 transition-opacity"
-                style={{ fontFamily: "'Roboto Mono', monospace", color: INK }}
-              >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                Return to Login
-              </Link>
+              <div className="flex items-center justify-between text-[11px] font-black uppercase tracking-[0.15em]">
+                <Link
+                  to="/customer-dashboard/forgot-password"
+                  className="hover:opacity-60 transition-opacity"
+                  style={{ fontFamily: "'Roboto Mono', monospace", color: INK }}
+                >
+                  Resend OTP Code
+                </Link>
+
+                <Link
+                  to="/customer-dashboard/login"
+                  className="flex items-center gap-1.5 hover:opacity-60 transition-opacity"
+                  style={{ fontFamily: "'Roboto Mono', monospace", color: INK }}
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  Return to Login
+                </Link>
+              </div>
             </form>
           </div>
         </div>

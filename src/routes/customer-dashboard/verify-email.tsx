@@ -1,6 +1,6 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { CheckCircle, Loader2, Mail, ArrowRight } from "lucide-react";
+import { CheckCircle, Loader2, Mail, ArrowRight, RotateCw } from "lucide-react";
 import AuthFocusedLayout from "@/components/auth/AuthFocusedLayout";
 import AuthInput from "@/components/auth/AuthInput";
 import { useAuth } from "@/store/auth";
@@ -13,42 +13,81 @@ const MINT = "#d5f5c2";
 
 function VerifyPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const user = useAuth((s) => s.user);
   const pendingEmail = useAuth((s) => s.pendingVerificationEmail);
   const verifyEmail = useAuth((s) => s.verifyEmail);
   const resend = useAuth((s) => s.resendVerification);
+
+  const queryEmail = searchParams.get("email");
+  const storedEmail =
+    typeof window !== "undefined"
+      ? sessionStorage.getItem("mytaxfiling-pending-verify-email")
+      : null;
+
+  const displayEmail = queryEmail || user?.email || pendingEmail || storedEmail || "";
+
   const [token, setToken] = useState("");
   const [error, setError] = useState<string | undefined>();
   const [busy, setBusy] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
 
   useEffect(() => {
-    if (!user && !pendingEmail) navigate("/customer-dashboard/login");
-  }, [user, pendingEmail, navigate]);
+    if (!displayEmail && !user) {
+      navigate("/customer-dashboard/login");
+    }
+  }, [displayEmail, user, navigate]);
 
-  const displayEmail = user?.email ?? pendingEmail ?? "";
-  if (!user && !pendingEmail) return null;
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const interval = setInterval(() => {
+      setCooldown((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [cooldown]);
 
   const onResend = async () => {
+    if (cooldown > 0 || resending) return;
+    setResending(true);
     try {
-      await resend();
-      notify.success("Code sent", "We sent a new verification code to your email.");
-    } catch {
-      notify.error("Couldn't resend", "Please try again in a moment.");
+      await resend(displayEmail);
+      setCooldown(60);
+      notify.success("Code sent", `We sent a new verification code to ${displayEmail}.`);
+    } catch (err) {
+      notify.error(
+        "Couldn't resend",
+        err instanceof Error ? err.message : "Please try again in a moment.",
+      );
+    } finally {
+      setResending(false);
     }
   };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setBusy(true);
-    const ok = await verifyEmail(token.trim());
-    if (!ok) {
-      setError("Invalid verification code.");
-      setBusy(false);
+    const cleanToken = token.trim();
+    if (!cleanToken) {
+      setError("Please enter the verification code sent to your email.");
       return;
     }
-    notify.success("Email verified", "Welcome aboard!");
-    navigate("/customer-dashboard/onboarding");
-    setBusy(false);
+    setError(undefined);
+    setBusy(true);
+
+    try {
+      const ok = await verifyEmail(cleanToken, displayEmail);
+      if (!ok) {
+        setError("Invalid or expired verification code. Please check and try again.");
+        setBusy(false);
+        return;
+      }
+      notify.success("Email verified", "Your account is verified!");
+      navigate(user?.onboarded ? "/customer-dashboard/receipts" : "/customer-dashboard/onboarding");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Verification failed. Please try again.");
+    } finally {
+      setBusy(false);
+    }
   };
 
   if (user?.emailVerified) {
@@ -83,11 +122,13 @@ function VerifyPage() {
               Email Verified
             </h1>
             <p className="text-sm font-semibold mb-8 opacity-60" style={{ color: INK }}>
-              You're ready for the next step — choose your account type and plan.
+              You're ready for the next step — configure your compliance profile and plan.
             </p>
 
             <Link
-              to="/customer-dashboard/onboarding"
+              to={
+                user.onboarded ? "/customer-dashboard/receipts" : "/customer-dashboard/onboarding"
+              }
               className="group w-full h-12 font-black uppercase tracking-[0.15em] text-[11px] flex items-center justify-center gap-2 transition-all hover:opacity-80 active:scale-95"
               style={{
                 fontFamily: "'Roboto Mono', monospace",
@@ -96,7 +137,7 @@ function VerifyPage() {
                 borderRadius: 6,
               }}
             >
-              Proceed to Onboarding
+              {user.onboarded ? "Go to Dashboard" : "Proceed to Onboarding"}
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </Link>
           </div>
@@ -128,7 +169,7 @@ function VerifyPage() {
                 className="text-[10px] font-black uppercase tracking-[0.25em] mb-1 opacity-50"
                 style={{ fontFamily: "'Roboto Mono', monospace", color: INK }}
               >
-                Step 1 of 2
+                Verification
               </p>
               <h1
                 className="text-2xl font-black uppercase"
@@ -136,31 +177,45 @@ function VerifyPage() {
               >
                 Verify Your Email
               </h1>
-              <p className="text-sm font-semibold mt-1.5 leading-relaxed opacity-60" style={{ color: INK }}>
-                We sent a 6-character code to{" "}
-                <span className="font-black opacity-100">{displayEmail}</span>.
+              <p
+                className="text-sm font-semibold mt-1.5 leading-relaxed opacity-60"
+                style={{ color: INK }}
+              >
+                We sent a 6-digit verification OTP to{" "}
+                <span className="font-black opacity-100">{displayEmail || "your email"}</span>.
               </p>
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={onResend}
-            className="mb-6 text-[11px] font-black uppercase tracking-[0.15em] hover:opacity-60 transition-opacity self-start"
-            style={{ fontFamily: "'Roboto Mono', monospace", color: INK }}
-          >
-            Resend code
-          </button>
-
           <form onSubmit={submit} className="flex flex-col gap-5" noValidate>
             <AuthInput
-              label="Verification Code"
-              placeholder="Enter 6-character code"
+              label="Verification OTP"
+              placeholder="Enter 6-digit code"
               value={token}
-              onChange={(e) => setToken(e.target.value)}
+              onChange={(e) => {
+                setToken(e.target.value);
+                if (error) setError(undefined);
+              }}
               error={error}
               autoComplete="one-time-code"
             />
+
+            <div className="flex items-center justify-between">
+              <button
+                type="button"
+                onClick={onResend}
+                disabled={cooldown > 0 || resending}
+                className="text-[11px] font-black uppercase tracking-[0.15em] flex items-center gap-1.5 hover:opacity-60 transition-opacity disabled:opacity-40"
+                style={{ fontFamily: "'Roboto Mono', monospace", color: INK }}
+              >
+                <RotateCw className={`w-3 h-3 ${resending ? "animate-spin" : ""}`} />
+                {cooldown > 0
+                  ? `Resend OTP in ${cooldown}s`
+                  : resending
+                    ? "Sending OTP…"
+                    : "Resend OTP"}
+              </button>
+            </div>
 
             <button
               type="submit"

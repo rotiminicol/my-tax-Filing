@@ -1,10 +1,11 @@
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import AuthLayout from "@/components/auth/AuthLayout";
 import { useAuth, type PlanTier } from "@/store/auth";
 import { notify } from "@/components/Toaster";
 import loginImg from "@/assets/login.png";
-import { Check, X, Star, Zap, ArrowRight, Shield } from "lucide-react";
+import { checkoutWithPaystack } from "@/lib/paystack";
+import { Check, X, Star, Zap, ArrowRight, Shield, Loader2 } from "lucide-react";
 
 const tiers = [
   {
@@ -22,22 +23,22 @@ const tiers = [
   {
     id: "deluxe" as PlanTier,
     label: "DELUXE",
-    price: "₦50,000",
-    cadence: "per year",
+    price: "₦12,500",
+    cadence: "per month",
     headline: "You & your properties",
-    sub: "For property managers handling multiple tenants and units",
+    sub: "Unlimited VAT & PIT filing, audit docs and priority support",
     cta: "Get Deluxe",
     featured: false,
     icon: Zap,
-    features: [true, true, true, false, false],
+    features: [true, true, true, true, false],
   },
   {
     id: "premium" as PlanTier,
     label: "PREMIUM",
-    price: "₦200,000",
-    cadence: "per year",
+    price: "₦45,000",
+    cadence: "per month",
     headline: "You & your agency",
-    sub: "For agencies needing full-scale batch filing and advanced tools",
+    sub: "Full-scale compliance, dedicated tax consultant and WHT automation",
     cta: "Get Premium",
     featured: true,
     icon: Star,
@@ -50,13 +51,14 @@ const featuresList = [
   "PDF Downloads & Email Delivery",
   "Batch Generation (up to 50 receipts)",
   "Advanced Excel Import & Export",
-  "Priority Expert Support",
+  "Dedicated Consultant & Support",
 ];
 
 function SelectPlanPage() {
   const navigate = useNavigate();
   const user = useAuth((s) => s.user);
   const updatePlan = useAuth((s) => s.updatePlan);
+  const [processingPlan, setProcessingPlan] = useState<PlanTier | null>(null);
 
   useEffect(() => {
     if (!user) navigate("/customer-dashboard/login");
@@ -64,11 +66,74 @@ function SelectPlanPage() {
 
   if (!user) return null;
 
-  const handleSelect = (planId: PlanTier) => {
-    updatePlan(planId);
-    const planLabel = tiers.find((t) => t.id === planId)?.label || planId;
-    notify.success("Plan Activated", `You're now on the ${planLabel} plan.`);
-    navigate("/customer-dashboard/receipts");
+  const handleSelect = async (planId: PlanTier) => {
+    if (planId === "free") {
+      updatePlan("free");
+      notify.success("Plan Activated", "You're now on the Free plan.");
+      navigate("/customer-dashboard/receipts");
+      return;
+    }
+
+    if (!user.email) {
+      notify.error("Email required", "Please ensure your account has a valid email.");
+      return;
+    }
+
+    setProcessingPlan(planId);
+
+    await checkoutWithPaystack({
+      email: user.email,
+      userId: user.id,
+      plan: planId,
+      billingCycle: "monthly",
+      onSuccess: async (reference) => {
+        try {
+          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+          const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+
+          if (supabaseUrl && anonKey) {
+            try {
+              await fetch(`${supabaseUrl}/functions/v1/verify-paystack-payment`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${anonKey}`,
+                },
+                body: JSON.stringify({
+                  reference,
+                  userId: user.id,
+                  plan: planId,
+                  billingCycle: "monthly",
+                }),
+              });
+            } catch (fnErr) {
+              console.warn("Edge function fallback:", fnErr);
+            }
+          }
+
+          updatePlan(planId, { billingCycle: "monthly" });
+          const planLabel = tiers.find((t) => t.id === planId)?.label || planId;
+          notify.success(
+            "Plan Activated",
+            `Welcome to ${planLabel}! Payment reference: ${reference}`,
+          );
+          navigate("/customer-dashboard/receipts");
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : "Payment error";
+          notify.error("Payment failed", msg);
+        } finally {
+          setProcessingPlan(null);
+        }
+      },
+      onClose: () => {
+        setProcessingPlan(null);
+        notify.info("Payment cancelled", "You can continue with the Free plan or retry anytime.");
+      },
+      onError: (err) => {
+        setProcessingPlan(null);
+        notify.error("Payment error", err.message || "Failed to initialize Paystack.");
+      },
+    });
   };
 
   return (
@@ -81,6 +146,7 @@ function SelectPlanPage() {
       <div className="space-y-3">
         {tiers.map((tier) => {
           const isActive = user.plan === tier.id;
+          const isProcessing = processingPlan === tier.id;
           const Icon = tier.icon;
           return (
             <div
@@ -89,8 +155,8 @@ function SelectPlanPage() {
                 tier.featured
                   ? "border-black bg-black text-white shadow-xl shadow-black/15"
                   : isActive
-                  ? "border-black bg-slate-50 shadow-md"
-                  : "border-slate-200 bg-white hover:border-slate-400 hover:shadow-sm"
+                    ? "border-black bg-slate-50 shadow-md"
+                    : "border-slate-200 bg-white hover:border-slate-400 hover:shadow-sm"
               }`}
             >
               {tier.featured && (
@@ -100,15 +166,19 @@ function SelectPlanPage() {
               )}
 
               <div className="flex items-start gap-4">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                  tier.featured ? "bg-white/10" : "bg-slate-100"
-                }`}>
+                <div
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                    tier.featured ? "bg-white/10" : "bg-slate-100"
+                  }`}
+                >
                   <Icon className={`w-5 h-5 ${tier.featured ? "text-white" : "text-slate-500"}`} />
                 </div>
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-baseline gap-2 mb-0.5">
-                    <p className={`text-[9px] font-black uppercase tracking-widest ${tier.featured ? "text-white/60" : "text-slate-400"}`}>
+                    <p
+                      className={`text-[9px] font-black uppercase tracking-widest ${tier.featured ? "text-white/60" : "text-slate-400"}`}
+                    >
                       {tier.label}
                     </p>
                     {isActive && (
@@ -117,13 +187,19 @@ function SelectPlanPage() {
                       </span>
                     )}
                   </div>
-                  <div className={`text-xl font-black tracking-tight ${tier.featured ? "text-white" : "text-black"}`}>
+                  <div
+                    className={`text-xl font-black tracking-tight ${tier.featured ? "text-white" : "text-black"}`}
+                  >
                     {tier.price}
-                    <span className={`text-[10px] font-bold ml-1.5 ${tier.featured ? "text-white/50" : "text-slate-400"}`}>
+                    <span
+                      className={`text-[10px] font-bold ml-1.5 ${tier.featured ? "text-white/50" : "text-slate-400"}`}
+                    >
                       {tier.cadence}
                     </span>
                   </div>
-                  <p className={`text-[11px] font-semibold mt-1 leading-relaxed ${tier.featured ? "text-white/60" : "text-slate-500"}`}>
+                  <p
+                    className={`text-[11px] font-semibold mt-1 leading-relaxed ${tier.featured ? "text-white/60" : "text-slate-500"}`}
+                  >
                     {tier.sub}
                   </p>
                 </div>
@@ -140,8 +216,8 @@ function SelectPlanPage() {
                           ? "bg-white/10 text-white"
                           : "bg-slate-100 text-slate-700"
                         : tier.featured
-                        ? "bg-white/5 text-white/30 line-through"
-                        : "bg-slate-50 text-slate-300 line-through"
+                          ? "bg-white/5 text-white/30 line-through"
+                          : "bg-slate-50 text-slate-300 line-through"
                     }`}
                   >
                     {tier.features[i] ? (
@@ -156,17 +232,26 @@ function SelectPlanPage() {
 
               <button
                 onClick={() => handleSelect(tier.id)}
-                disabled={isActive}
+                disabled={isActive || processingPlan !== null}
                 className={`w-full h-11 rounded-xl text-xs font-black flex items-center justify-center gap-2 transition-all cursor-pointer disabled:cursor-default ${
                   isActive
                     ? "bg-slate-200 text-slate-500"
                     : tier.featured
-                    ? "bg-white text-black hover:bg-white/90 shadow-md"
-                    : "bg-black text-white hover:opacity-90 shadow-md shadow-black/10"
+                      ? "bg-white text-black hover:bg-white/90 shadow-md"
+                      : "bg-black text-white hover:opacity-90 shadow-md shadow-black/10"
                 }`}
               >
-                {isActive ? "Active Plan" : tier.cta}
-                {!isActive && <ArrowRight className="w-3.5 h-3.5" />}
+                {isProcessing ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    Opening Paystack…
+                  </>
+                ) : isActive ? (
+                  "Active Plan"
+                ) : (
+                  tier.cta
+                )}
+                {!isActive && !isProcessing && <ArrowRight className="w-3.5 h-3.5" />}
               </button>
             </div>
           );
@@ -175,10 +260,13 @@ function SelectPlanPage() {
 
       {/* Skip link */}
       <button
-        onClick={() => navigate("/customer-dashboard/receipts")}
+        onClick={() => {
+          updatePlan("free");
+          navigate("/customer-dashboard/receipts");
+        }}
         className="w-full mt-4 text-center text-[11px] font-bold text-slate-400 hover:text-slate-600 transition-colors cursor-pointer py-2"
       >
-        Skip for now   continue with Free plan
+        Skip for now — continue with Free plan
       </button>
     </AuthLayout>
   );

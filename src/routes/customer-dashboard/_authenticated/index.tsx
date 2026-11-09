@@ -1,10 +1,14 @@
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import DashboardShell from "@/components/layout/DashboardShell";
+import { useAuth } from "@/store/auth";
 import { useReceiptsStore } from "@/store/receipts";
 import { useTaxesStore } from "@/store/taxes";
 import { useDocumentsStore } from "@/store/documents";
 import { useInvoicingStore } from "@/store/invoicing";
+import { PlanBadge } from "@/components/subscription/PlanBadge";
+import { UsageIndicator } from "@/components/subscription/UsageIndicator";
+import { planDisplayName } from "@/lib/planConfig";
 import {
   ArrowRight,
   BarChart3,
@@ -36,6 +40,7 @@ function formatCurrency(amount: number) {
 }
 
 function DashboardHomePage() {
+  const user = useAuth((s) => s.user);
   const receiptsCount = useReceiptsStore((s) => s.receipts.length);
   const documents = useDocumentsStore((s) => s.documents);
   const filings = useTaxesStore((s) => s.filings);
@@ -72,7 +77,8 @@ function DashboardHomePage() {
         (t.dueDate !== undefined && new Date(t.dueDate) <= new Date()),
     );
 
-    const complianceScore = trackable.length === 0 ? 100 : Math.round((compliant.length / trackable.length) * 100);
+    const complianceScore =
+      trackable.length === 0 ? 100 : Math.round((compliant.length / trackable.length) * 100);
 
     const upcomingDeadlines = [
       ...filings
@@ -100,10 +106,7 @@ function DashboardHomePage() {
     return { totalPaidYear, complianceScore, upcomingDeadlines };
   }, [filings, vatReturns]);
 
-  const paidCount = useMemo(
-    () => invoices.filter((i) => i.status === "paid").length,
-    [invoices],
-  );
+  const paidCount = useMemo(() => invoices.filter((i) => i.status === "paid").length, [invoices]);
 
   const cards = useMemo(
     () => [
@@ -142,20 +145,64 @@ function DashboardHomePage() {
   return (
     <DashboardShell title="Dashboard Overview">
       <div className="space-y-8">
+        {/* Subscription Plan Status Banner */}
+        <div
+          className="rounded-2xl border p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+          style={{ background: SB.cream, borderColor: SB.cardBorder }}
+        >
+          <div className="flex items-center gap-3">
+            <PlanBadge plan={user?.plan} />
+            <div>
+              <p className="text-sm font-bold" style={{ color: SB.ink }}>
+                {planDisplayName(user?.plan)} Subscription
+                {user?.planBillingCycle
+                  ? ` · ${user.planBillingCycle === "annual" ? "Annual" : "Monthly"}`
+                  : ""}
+              </p>
+              <p className="text-xs" style={{ color: SB.muted }}>
+                {user?.plan === "premium"
+                  ? "Unlimited access to all tax filing, receipt generation, and consultant services."
+                  : user?.plan === "deluxe"
+                    ? "Unlimited VAT & PIT filing, audit docs, priority support."
+                    : "Free tier with 5 receipts/month. Upgrade to unlock batch filing and unlimited tools."}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            {user?.plan === "free" && (
+              <UsageIndicator feature="receipt-generate" label="Receipts" className="min-w-32" />
+            )}
+            {user?.plan !== "premium" && (
+              <Link
+                to="/customer-dashboard/subscription"
+                className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-black uppercase tracking-wide shrink-0 transition hover:opacity-90"
+                style={{ background: SB.yellow, color: SB.ink }}
+              >
+                <Zap size={14} />
+                Upgrade Plan
+              </Link>
+            )}
+          </div>
+        </div>
+
         <section
           className="rounded-[32px] border p-6 shadow-sm"
           style={{ backgroundColor: "rgba(252,250,245,0.96)", borderColor: "rgba(26,51,0,0.08)" }}
         >
           <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
             <div className="max-w-2xl">
-              <p className="text-xs font-bold uppercase tracking-[0.35em] mb-3" style={{ color: SB.yellow }}>
+              <p
+                className="text-xs font-bold uppercase tracking-[0.35em] mb-3"
+                style={{ color: SB.yellow }}
+              >
                 Smart dashboard
               </p>
               <h1 className="text-4xl font-extrabold tracking-tight" style={{ color: SB.ink }}>
                 Your compliance command center
               </h1>
               <p className="mt-4 text-sm leading-7" style={{ color: SB.muted }}>
-                Get an instant pulse on rent receipts, tax obligations, renewals, and invoices — all in one streamlined workspace.
+                Get an instant pulse on rent receipts, tax obligations, renewals, and invoices — all
+                in one streamlined workspace.
               </p>
             </div>
 
@@ -208,7 +255,9 @@ function DashboardHomePage() {
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <p className="text-[11px] uppercase tracking-[0.45em] font-bold">{stat.label}</p>
+                      <p className="text-[11px] uppercase tracking-[0.45em] font-bold">
+                        {stat.label}
+                      </p>
                       <p className="mt-3 text-3xl font-extrabold">{stat.value}</p>
                     </div>
                     <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/90 text-[#18623f]">
@@ -232,7 +281,10 @@ function DashboardHomePage() {
               >
                 <div className="flex items-center justify-between gap-4">
                   <div>
-                    <p className="text-sm uppercase tracking-[0.2em] font-bold" style={{ color: SB.pencil }}>
+                    <p
+                      className="text-sm uppercase tracking-[0.2em] font-bold"
+                      style={{ color: SB.pencil }}
+                    >
                       {card.title}
                     </p>
                     <p className="text-3xl font-extrabold mt-4" style={{ color: SB.ink }}>
@@ -241,7 +293,11 @@ function DashboardHomePage() {
                   </div>
                   <div
                     className="flex h-14 w-14 items-center justify-center rounded-3xl"
-                    style={{ backgroundColor: index % 2 === 0 ? SB.mint : index === 1 ? SB.yellow : SB.cream, color: SB.ink }}
+                    style={{
+                      backgroundColor:
+                        index % 2 === 0 ? SB.mint : index === 1 ? SB.yellow : SB.cream,
+                      color: SB.ink,
+                    }}
                   >
                     <Icon className="w-6 h-6" />
                   </div>
@@ -263,24 +319,37 @@ function DashboardHomePage() {
         </section>
 
         <section className="grid gap-6 xl:grid-cols-[1.4fr_0.9fr]">
-          <div className="rounded-[32px] border p-6 shadow-sm" style={{ backgroundColor: SB.white, borderColor: SB.cardBorder }}>
+          <div
+            className="rounded-[32px] border p-6 shadow-sm"
+            style={{ backgroundColor: SB.white, borderColor: SB.cardBorder }}
+          >
             <div className="flex items-center justify-between gap-4 mb-6">
               <div>
-                <p className="text-sm uppercase tracking-[0.2em] font-bold" style={{ color: SB.pencil }}>
+                <p
+                  className="text-sm uppercase tracking-[0.2em] font-bold"
+                  style={{ color: SB.pencil }}
+                >
                   Operational view
                 </p>
                 <h2 className="text-2xl font-extrabold mt-2" style={{ color: SB.ink }}>
                   Top priorities this week
                 </h2>
               </div>
-              <span className="rounded-full bg-[#e5f4e6] px-4 py-2 text-xs font-semibold" style={{ color: SB.ink }}>
+              <span
+                className="rounded-full bg-[#e5f4e6] px-4 py-2 text-xs font-semibold"
+                style={{ color: SB.ink }}
+              >
                 Updated now
               </span>
             </div>
 
             <div className="grid gap-4">
               {upcomingDeadlines.slice(0, 3).map((deadline) => (
-                <div key={deadline.id} className="rounded-[26px] border p-5" style={{ borderColor: SB.cardBorder, backgroundColor: SB.cream }}>
+                <div
+                  key={deadline.id}
+                  className="rounded-[26px] border p-5"
+                  style={{ borderColor: SB.cardBorder, backgroundColor: SB.cream }}
+                >
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <p className="font-semibold" style={{ color: SB.ink }}>
@@ -294,7 +363,10 @@ function DashboardHomePage() {
                       {deadline.status}
                     </span>
                   </div>
-                  <div className="mt-4 flex items-center justify-between gap-3 text-sm" style={{ color: SB.muted }}>
+                  <div
+                    className="mt-4 flex items-center justify-between gap-3 text-sm"
+                    style={{ color: SB.muted }}
+                  >
                     <p>{deadline.dueDate}</p>
                     <div className="inline-flex items-center gap-2 text-[#18623f] font-semibold">
                       <Layers className="w-4 h-4" />
@@ -307,13 +379,19 @@ function DashboardHomePage() {
           </div>
 
           <div className="space-y-6">
-            <div className="rounded-[32px] border p-6 shadow-sm" style={{ backgroundColor: SB.white, borderColor: SB.cardBorder }}>
+            <div
+              className="rounded-[32px] border p-6 shadow-sm"
+              style={{ backgroundColor: SB.white, borderColor: SB.cardBorder }}
+            >
               <div className="flex items-center gap-3 mb-4">
                 <div className="flex h-14 w-14 items-center justify-center rounded-3xl bg-[#fef3c7] text-[#18623f]">
                   <Sparkles className="w-6 h-6" />
                 </div>
                 <div>
-                  <p className="text-sm uppercase tracking-[0.2em] font-bold" style={{ color: SB.pencil }}>
+                  <p
+                    className="text-sm uppercase tracking-[0.2em] font-bold"
+                    style={{ color: SB.pencil }}
+                  >
                     Productivity boost
                   </p>
                   <h2 className="text-xl font-extrabold mt-2" style={{ color: SB.ink }}>
@@ -325,18 +403,24 @@ function DashboardHomePage() {
                 {[
                   {
                     title: "Automated checks",
-                    description: "The system flags missing fields and suggests the next best compliance step.",
+                    description:
+                      "The system flags missing fields and suggests the next best compliance step.",
                   },
                   {
                     title: "Unified follow-up",
-                    description: "One place for receipts, invoices, tax deadlines and document applications.",
+                    description:
+                      "One place for receipts, invoices, tax deadlines and document applications.",
                   },
                   {
                     title: "Clear action cards",
                     description: "Quick entry points keep every task reachable in two clicks.",
                   },
                 ].map((item) => (
-                  <div key={item.title} className="rounded-[24px] border p-4" style={{ backgroundColor: SB.cream, borderColor: SB.cardBorder }}>
+                  <div
+                    key={item.title}
+                    className="rounded-[24px] border p-4"
+                    style={{ backgroundColor: SB.cream, borderColor: SB.cardBorder }}
+                  >
                     <p className="text-sm font-semibold" style={{ color: SB.ink }}>
                       {item.title}
                     </p>
@@ -348,10 +432,16 @@ function DashboardHomePage() {
               </div>
             </div>
 
-            <div className="rounded-[32px] border p-6 shadow-sm" style={{ backgroundColor: SB.white, borderColor: SB.cardBorder }}>
+            <div
+              className="rounded-[32px] border p-6 shadow-sm"
+              style={{ backgroundColor: SB.white, borderColor: SB.cardBorder }}
+            >
               <div className="flex items-center justify-between gap-3 mb-5">
                 <div>
-                  <p className="text-sm uppercase tracking-[0.2em] font-bold" style={{ color: SB.pencil }}>
+                  <p
+                    className="text-sm uppercase tracking-[0.2em] font-bold"
+                    style={{ color: SB.pencil }}
+                  >
                     Quick actions
                   </p>
                   <h2 className="text-xl font-extrabold mt-2" style={{ color: SB.ink }}>

@@ -6,12 +6,7 @@ import SignOutConfirmModal from "@/components/auth/SignOutConfirmModal";
 import { useAuth } from "@/store/auth";
 import { formatPlanSummary } from "@/lib/planConfig";
 import { notify } from "@/components/Toaster";
-import {
-  MAIN_NAV,
-  MOBILE_BOTTOM_NAV,
-  SIDEBAR_ACCOUNT_NAV,
-  isNavActive,
-} from "./fiscalNav";
+import { MAIN_NAV, MOBILE_BOTTOM_NAV, SIDEBAR_ACCOUNT_NAV, isNavActive } from "./fiscalNav";
 import DashboardBreadcrumbs from "./DashboardBreadcrumbs";
 import type { DashboardBreadcrumb } from "@/lib/dashboardBreadcrumbs";
 
@@ -75,17 +70,31 @@ export default function FiscalDashboardShell({
         style={{ borderColor: sb.sidebarDivider }}
       >
         {!collapsed ? (
-          <>
-            <h3 className="text-sm font-bold tracking-tight" style={{ color: "#fcfaf5" }}>
-              Dashboard
-            </h3>
-            <p className="text-xs mt-1" style={{ color: "rgba(252,250,245,0.65)" }}>
-              {planLine}
-            </p>
-          </>
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <h3 className="text-sm font-bold tracking-tight" style={{ color: "#fcfaf5" }}>
+                Dashboard
+              </h3>
+              <p className="text-xs mt-0.5" style={{ color: "rgba(252,250,245,0.65)" }}>
+                {planLine}
+              </p>
+            </div>
+            {user?.plan !== "premium" && (
+              <Link
+                to="/customer-dashboard/subscription"
+                className="px-2 py-1 rounded text-[10px] font-black uppercase tracking-wider shrink-0 transition hover:opacity-90"
+                style={{ backgroundColor: "#ffe95c", color: "#18623f" }}
+              >
+                Upgrade
+              </Link>
+            )}
+          </div>
         ) : (
           <div className="w-full flex justify-center">
-            <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: "rgba(252,250,245,0.3)" }} />
+            <div
+              className="w-1.5 h-1.5 rounded-full"
+              style={{ backgroundColor: "rgba(252,250,245,0.3)" }}
+            />
           </div>
         )}
       </div>
@@ -128,7 +137,10 @@ export default function FiscalDashboardShell({
       </div>
 
       {/* Bottom section: account actions */}
-      <div className="mt-auto pt-4 border-t flex flex-col gap-1" style={{ borderColor: sb.sidebarDivider }}>
+      <div
+        className="mt-auto pt-4 border-t flex flex-col gap-1"
+        style={{ borderColor: sb.sidebarDivider }}
+      >
         <div className={`flex flex-col gap-1 ${collapsed ? "px-2" : "px-3"}`}>
           {SIDEBAR_ACCOUNT_NAV.map((item) => {
             if (item.type === "action") {
@@ -198,7 +210,10 @@ export default function FiscalDashboardShell({
   );
 
   return (
-    <div className="min-h-screen flex flex-col font-sans" style={{ backgroundColor: sb.contentBg, color: sb.forestInk }}>
+    <div
+      className="min-h-screen flex flex-col font-sans"
+      style={{ backgroundColor: sb.contentBg, color: sb.forestInk }}
+    >
       <div className="flex min-h-screen">
         {/* Sidebar */}
         <aside
@@ -226,7 +241,11 @@ export default function FiscalDashboardShell({
               style={{ color: "#fcfaf5" }}
               aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
-              {sidebarCollapsed ? <PanelLeftOpen className="w-5 h-5" /> : <PanelLeftClose className="w-5 h-5" />}
+              {sidebarCollapsed ? (
+                <PanelLeftOpen className="w-5 h-5" />
+              ) : (
+                <PanelLeftClose className="w-5 h-5" />
+              )}
             </button>
           </div>
 
@@ -239,7 +258,7 @@ export default function FiscalDashboardShell({
         {/* Main content area */}
         <div
           className="flex-1 flex flex-col transition-all duration-300 ease-in-out"
-          style={{ marginLeft: isMobile ? 0 : (sidebarCollapsed ? "72px" : "256px") }}
+          style={{ marginLeft: isMobile ? 0 : sidebarCollapsed ? "72px" : "256px" }}
         >
           {/* Top header — cream paper */}
           <header
@@ -247,7 +266,7 @@ export default function FiscalDashboardShell({
             style={{
               backgroundColor: sb.headerBg,
               borderColor: sb.headerBorder,
-              left: isMobile ? 0 : (sidebarCollapsed ? "72px" : "256px"),
+              left: isMobile ? 0 : sidebarCollapsed ? "72px" : "256px",
             }}
           >
             <div className="flex justify-between items-center w-full px-6 md:px-10 gap-4">
@@ -340,7 +359,9 @@ export default function FiscalDashboardShell({
               style={{ maxWidth: sb.maxWidth, color: sb.forestInk }}
             >
               <div className="text-center md:text-left">
-                <div className="text-sm font-bold tracking-tight" style={{ color: sb.forestInk }}>My Tax Filing</div>
+                <div className="text-sm font-bold tracking-tight" style={{ color: sb.forestInk }}>
+                  My Tax Filing
+                </div>
                 <p className="text-xs mt-0.5" style={{ color: sb.pencilGray }}>
                   © {new Date().getFullYear()} My Tax Filing. Licensed Nigerian Fintech Provider.
                 </p>

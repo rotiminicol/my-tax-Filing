@@ -40,6 +40,7 @@ import {
 } from "lucide-react";
 import AppSelect from "@/components/ui/AppSelect";
 import { notify } from "@/components/Toaster";
+import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 
 // Autocomplete Preset Vendors
 const VENDOR_PRESETS = [
@@ -181,6 +182,11 @@ function NewReceipt() {
     reset,
   } = useDraft();
   const add = useReceiptsStore((s) => s.add);
+  const {
+    limit: receiptLimit,
+    getUsage: getReceiptUsage,
+    incrementUsage: incrementReceiptUsage,
+  } = useFeatureAccess("receipt-generate");
 
   const STEP_LABELS = ["Details", "Line Items", "Documents", "Receipt Preview"];
   const [step, setLocalStep] = useState(draft.step || 0);
@@ -249,8 +255,7 @@ function NewReceipt() {
     [subtotal, taxAmount, discountAmount],
   );
 
-  const priceMismatch =
-    statedReceiptAmount > 0 && Math.abs(statedReceiptAmount - grandTotal) > 0;
+  const priceMismatch = statedReceiptAmount > 0 && Math.abs(statedReceiptAmount - grandTotal) > 0;
 
   useEffect(() => {
     patchTaxpayer({
@@ -267,23 +272,19 @@ function NewReceipt() {
 
     if (step === 0) {
       if (!t.fullName?.trim()) e.fullName = "Required";
-      if (!t.taxId || t.taxId.length < 8)
-        e.tTaxId = "Enter a valid TIN (8-12 digits)";
+      if (!t.taxId || t.taxId.length < 8) e.tTaxId = "Enter a valid TIN (8-12 digits)";
       if (!t.propertyAddress?.trim()) e.propertyAddress = "Required";
       if (!l.fullName?.trim()) e.lFullName = "Required";
       if (!l.address?.trim()) e.lAddress = "Required";
       if (!l.phone) e.lPhone = "Required";
       if (!em.companyName?.trim()) e.companyName = "Required";
-      if (!em.taxId || em.taxId.length < 8)
-        e.eTaxId = "Enter a valid Employer TIN";
+      if (!em.taxId || em.taxId.length < 8) e.eTaxId = "Enter a valid Employer TIN";
     }
 
     if (step === 1) {
-      if (lineItems.length === 0)
-        e.lineItems = "Please add at least one line item";
+      if (lineItems.length === 0) e.lineItems = "Please add at least one line item";
       lineItems.forEach((item, idx) => {
-        if (!item.description.trim())
-          e[`item_${idx}_desc`] = "Description is required";
+        if (!item.description.trim()) e[`item_${idx}_desc`] = "Description is required";
         if (item.amount <= 0) e[`item_${idx}_amt`] = "Must be greater than 0";
       });
     }
@@ -317,10 +318,7 @@ function NewReceipt() {
       type: preset.type,
     });
     setShowPresets(false);
-    notify.success(
-      "Vendor Preset Applied",
-      `Loaded ${preset.name} automatically.`,
-    );
+    notify.success("Vendor Preset Applied", `Loaded ${preset.name} automatically.`);
   };
 
   const addLineRow = () => {
@@ -335,18 +333,13 @@ function NewReceipt() {
     ]);
   };
 
-  const updateLineRow = (id: string, field: keyof LineItem, val: any) => {
-    setLineItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, [field]: val } : item)),
-    );
+  const updateLineRow = (id: string, field: keyof LineItem, val: string | number) => {
+    setLineItems((prev) => prev.map((item) => (item.id === id ? { ...item, [field]: val } : item)));
   };
 
   const removeLineRow = (id: string) => {
     if (lineItems.length === 1) {
-      notify.warning(
-        "Minimum Row Limit",
-        "At least one line item is required.",
-      );
+      notify.warning("Minimum Row Limit", "At least one line item is required.");
       return;
     }
     setLineItems((prev) => prev.filter((item) => item.id !== id));
@@ -408,20 +401,35 @@ function NewReceipt() {
     );
   };
   const shareReceipt = () => {
-    const subj = encodeURIComponent(
-      `Rent Receipt — ${draft.taxpayer.fullName}`,
-    );
+    const subj = encodeURIComponent(`Rent Receipt — ${draft.taxpayer.fullName}`);
     const body = encodeURIComponent(
       `Please find attached the rent receipt for ${draft.taxpayer.fullName}.`,
     );
     window.location.href = `mailto:?subject=${subj}&body=${body}`;
   };
 
-  const generate = () => {
+  const generate = async () => {
     if (!validateStep()) return;
+
+    if (receiptLimit !== null) {
+      try {
+        const used = await getReceiptUsage();
+        if (used >= receiptLimit) {
+          notify.error(
+            "Monthly limit reached",
+            `Your plan allows up to ${receiptLimit} receipts per month. Please upgrade to Deluxe for unlimited receipts.`,
+          );
+          return;
+        }
+      } catch (err) {
+        console.warn("Could not check receipt usage limit:", err);
+      }
+    }
+
     const receipt: Receipt = { ...previewReceipt };
     useLoadingStore.getState().showLoader("Generating Security Stamp...");
     setStamping(true);
+    void incrementReceiptUsage().catch(() => {});
     requestAnimationFrame(() => {
       if (stampRef.current) {
         gsap.fromTo(
@@ -558,9 +566,7 @@ function NewReceipt() {
                     variant="underline"
                     value={t.fullName ?? ""}
                     invalid={!!errors.fullName}
-                    onChange={(e) =>
-                      patchTaxpayer({ fullName: e.target.value })
-                    }
+                    onChange={(e) => patchTaxpayer({ fullName: e.target.value })}
                     placeholder="e.g. Adaeze Okonkwo"
                   />
                   <ErrorText>{errors.fullName}</ErrorText>
@@ -580,9 +586,7 @@ function NewReceipt() {
                     variant="underline"
                     value={t.propertyAddress ?? ""}
                     invalid={!!errors.propertyAddress}
-                    onChange={(e) =>
-                      patchTaxpayer({ propertyAddress: e.target.value })
-                    }
+                    onChange={(e) => patchTaxpayer({ propertyAddress: e.target.value })}
                     placeholder="House no., street, district, FCT"
                   />
                   <ErrorText>{errors.propertyAddress}</ErrorText>
@@ -596,9 +600,7 @@ function NewReceipt() {
                     variant="underline"
                     value={l.fullName ?? ""}
                     invalid={!!errors.lFullName}
-                    onChange={(e) =>
-                      patchLandlord({ fullName: e.target.value })
-                    }
+                    onChange={(e) => patchLandlord({ fullName: e.target.value })}
                     placeholder="e.g. Abuja Properties Ltd"
                   />
                   <ErrorText>{errors.lFullName}</ErrorText>
@@ -635,9 +637,7 @@ function NewReceipt() {
                 </div>
                 <div className="md:col-span-2">
                   <Label required>
-                    {l.type === "agent"
-                      ? "Office Address"
-                      : "Residential Address"}
+                    {l.type === "agent" ? "Office Address" : "Residential Address"}
                   </Label>
                   <Textarea
                     variant="underline"
@@ -658,9 +658,7 @@ function NewReceipt() {
                     variant="underline"
                     value={em.companyName ?? ""}
                     invalid={!!errors.companyName}
-                    onChange={(e) =>
-                      patchEmployer({ companyName: e.target.value })
-                    }
+                    onChange={(e) => patchEmployer({ companyName: e.target.value })}
                     placeholder="e.g. Standard Corporate Services"
                   />
                   <ErrorText>{errors.companyName}</ErrorText>
@@ -711,8 +709,8 @@ function NewReceipt() {
                     Line Item Builder
                   </h3>
                   <p className="text-[11px] text-muted-foreground leading-relaxed mb-4">
-                    List individual payments (e.g. rent installments, deposits).
-                    All amounts are in Nigerian Naira (₦).
+                    List individual payments (e.g. rent installments, deposits). All amounts are in
+                    Nigerian Naira (₦).
                   </p>
                   <ErrorText>{errors.lineItems}</ErrorText>
                 </div>
@@ -738,11 +736,7 @@ function NewReceipt() {
                               value={item.description}
                               invalid={!!errors[`item_${idx}_desc`]}
                               onChange={(e) =>
-                                updateLineRow(
-                                  item.id,
-                                  "description",
-                                  e.target.value,
-                                )
+                                updateLineRow(item.id, "description", e.target.value)
                               }
                               placeholder="e.g. Annual Rent 2026"
                             />
@@ -755,9 +749,7 @@ function NewReceipt() {
                             <AppSelect
                               size="sm"
                               value={item.category}
-                              onValueChange={(v) =>
-                                updateLineRow(item.id, "category", v)
-                              }
+                              onValueChange={(v) => updateLineRow(item.id, "category", v)}
                               options={CATEGORIES.map((cat) => ({
                                 value: cat,
                                 label: cat,
@@ -772,9 +764,7 @@ function NewReceipt() {
                               variant="underline"
                               value={item.amount || undefined}
                               invalid={!!errors[`item_${idx}_amt`]}
-                              onChange={(n) =>
-                                updateLineRow(item.id, "amount", n)
-                              }
+                              onChange={(n) => updateLineRow(item.id, "amount", n)}
                             />
                             <ErrorText>{errors[`item_${idx}_amt`]}</ErrorText>
                           </div>
@@ -807,9 +797,7 @@ function NewReceipt() {
                     </p>
                     <div className="flex justify-between text-xs font-medium text-muted-foreground">
                       <span>Subtotal ({lineItems.length} items)</span>
-                      <span className="font-bold text-foreground">
-                        {formatNaira(subtotal)}
-                      </span>
+                      <span className="font-bold text-foreground">{formatNaira(subtotal)}</span>
                     </div>
                   </div>
                 )}
@@ -845,9 +833,7 @@ function NewReceipt() {
                               max="20"
                               step="0.5"
                               value={taxRate}
-                              onChange={(e) =>
-                                setTaxRate(Number(e.target.value))
-                              }
+                              onChange={(e) => setTaxRate(Number(e.target.value))}
                               className="flex-1 accent-primary cursor-pointer h-1 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none"
                             />
                             <span className="font-mono text-xs font-black text-foreground bg-card border border-border px-2 py-1 rounded w-12 text-center shrink-0">
@@ -880,31 +866,23 @@ function NewReceipt() {
                     </p>
                     <div className="flex justify-between text-xs text-muted-foreground">
                       <span>Subtotal</span>
-                      <span className="font-bold text-foreground">
-                        {formatNaira(subtotal)}
-                      </span>
+                      <span className="font-bold text-foreground">{formatNaira(subtotal)}</span>
                     </div>
                     {taxEnabled && (
                       <div className="flex justify-between text-xs text-muted-foreground">
                         <span>VAT ({taxRate}%)</span>
-                        <span className="font-bold text-foreground">
-                          +{formatNaira(taxAmount)}
-                        </span>
+                        <span className="font-bold text-foreground">+{formatNaira(taxAmount)}</span>
                       </div>
                     )}
                     {discountAmount > 0 && (
                       <div className="flex justify-between text-xs text-rose-500">
                         <span>Discount</span>
-                        <span className="font-bold">
-                          -{formatNaira(discountAmount)}
-                        </span>
+                        <span className="font-bold">-{formatNaira(discountAmount)}</span>
                       </div>
                     )}
                     <div className="border-t border-border pt-2 flex justify-between text-sm font-black text-foreground">
                       <span>Grand Total</span>
-                      <span className="text-primary">
-                        {formatNaira(grandTotal)}
-                      </span>
+                      <span className="text-primary">{formatNaira(grandTotal)}</span>
                     </div>
                   </div>
                 </div>
@@ -921,9 +899,7 @@ function NewReceipt() {
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-xs font-bold text-foreground">
-                            Receipt Document
-                          </p>
+                          <p className="text-xs font-bold text-foreground">Receipt Document</p>
                           <p className="text-[10px] text-muted-foreground mt-0.5">
                             Attach the receipt from your landlord
                           </p>
@@ -957,9 +933,7 @@ function NewReceipt() {
                             if (f) handleReceiptFile(f);
                           }}
                         >
-                          <p className="text-xs font-bold text-foreground">
-                            Drop receipt here
-                          </p>
+                          <p className="text-xs font-bold text-foreground">Drop receipt here</p>
                           <p className="text-[10px] text-muted-foreground mt-0.5">
                             PDF, image up to 10MB
                           </p>
@@ -983,25 +957,18 @@ function NewReceipt() {
                                 Price Mismatch Detected
                               </p>
                               <p className="text-[10px] leading-relaxed">
-                                Receipt states{" "}
-                                <strong>
-                                  {formatNaira(statedReceiptAmount)}
-                                </strong>{" "}
-                                but computed total is{" "}
-                                <strong>{formatNaira(grandTotal)}</strong>.
+                                Receipt states <strong>{formatNaira(statedReceiptAmount)}</strong>{" "}
+                                but computed total is <strong>{formatNaira(grandTotal)}</strong>.
                                 Difference:{" "}
-                                {formatNaira(
-                                  Math.abs(statedReceiptAmount - grandTotal),
-                                )}
-                                . Please verify before proceeding.
+                                {formatNaira(Math.abs(statedReceiptAmount - grandTotal))}. Please
+                                verify before proceeding.
                               </p>
                             </div>
                           </div>
                         )}
                         {statedReceiptAmount > 0 && !priceMismatch && (
                           <p className="text-[10px] text-emerald-600 flex items-center gap-1 font-bold">
-                            <CheckCircle2 className="w-3 h-3" /> Amount matches
-                            computed total
+                            <CheckCircle2 className="w-3 h-3" /> Amount matches computed total
                           </p>
                         )}
                       </div>
@@ -1011,9 +978,7 @@ function NewReceipt() {
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-xs font-bold text-foreground">
-                            Lease Agreement
-                          </p>
+                          <p className="text-xs font-bold text-foreground">Lease Agreement</p>
                           <p className="text-[10px] text-muted-foreground mt-0.5">
                             Attach your tenancy agreement
                           </p>
@@ -1070,13 +1035,9 @@ function NewReceipt() {
                     Review & Finalise
                   </p>
                   <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    This is your final receipt. Review all details carefully —
-                    go back to any step to make changes. Once you are satisfied,
-                    sign and click{" "}
-                    <strong className="text-foreground">
-                      Generate Final Receipt
-                    </strong>
-                    .
+                    This is your final receipt. Review all details carefully — go back to any step
+                    to make changes. Once you are satisfied, sign and click{" "}
+                    <strong className="text-foreground">Generate Final Receipt</strong>.
                   </p>
                 </div>
 
@@ -1109,10 +1070,7 @@ function NewReceipt() {
                 {/* The actual receipt document */}
                 <div className="overflow-x-auto border border-border rounded-lg bg-slate-50/50 dark:bg-slate-900/5 p-4 sm:p-8 flex justify-center">
                   <div className="w-full max-w-[820px] shadow-lg">
-                    <ReceiptDocument
-                      ref={receiptDocRef}
-                      receipt={previewReceipt}
-                    />
+                    <ReceiptDocument ref={receiptDocRef} receipt={previewReceipt} />
                   </div>
                 </div>
 
@@ -1123,17 +1081,16 @@ function NewReceipt() {
                     FCT-IRS Audit & Clawback Warning (NTAA Sec. 57)
                   </div>
                   <p className="text-[11px] font-medium leading-relaxed">
-                    Under FCT-IRS regulations, all rent allowance claims must be
-                    compiled and submitted on or before{" "}
+                    Under FCT-IRS regulations, all rent allowance claims must be compiled and
+                    submitted on or before{" "}
                     <strong className="font-extrabold text-red-900 dark:text-red-200">
                       31st May, 2026
                     </strong>
-                    . Where the Service determines that any claim submitted by
-                    employee is false, misleading, or inaccurate, the applicable
-                    tax relief shall immediately cease to apply, and any tax
-                    benefit previously enjoyed shall be recovered/clawed back
-                    from the employee's salary in the month immediately
-                    following formal notification to the employer.
+                    . Where the Service determines that any claim submitted by employee is false,
+                    misleading, or inaccurate, the applicable tax relief shall immediately cease to
+                    apply, and any tax benefit previously enjoyed shall be recovered/clawed back
+                    from the employee's salary in the month immediately following formal
+                    notification to the employer.
                   </p>
                 </div>
 
@@ -1147,8 +1104,7 @@ function NewReceipt() {
                       className="mt-0.5 h-4 w-4 rounded border-border accent-primary cursor-pointer"
                     />
                     <span className="text-xs font-semibold text-muted-foreground group-hover:text-foreground transition-colors leading-relaxed">
-                      I confirm all information provided is accurate and
-                      complete in accordance with{" "}
+                      I confirm all information provided is accurate and complete in accordance with{" "}
                       <span className="text-foreground font-bold underline underline-offset-4 decoration-primary/20">
                         Section 57 of the NTAA regulations
                       </span>
@@ -1199,18 +1155,8 @@ function NewReceipt() {
         <div className="fixed inset-0 z-[100] grid place-items-center bg-white/80 dark:bg-slate-950/80 backdrop-blur-2xl transition-all duration-300">
           <div ref={stampRef} className="relative">
             <div className="absolute inset-0 bg-primary/10 rounded-full blur-3xl" />
-            <svg
-              viewBox="0 0 200 200"
-              className="w-60 h-60 relative text-primary"
-            >
-              <circle
-                cx="100"
-                cy="100"
-                r="90"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="8"
-              />
+            <svg viewBox="0 0 200 200" className="w-60 h-60 relative text-primary">
+              <circle cx="100" cy="100" r="90" fill="none" stroke="currentColor" strokeWidth="8" />
               <circle
                 cx="100"
                 cy="100"

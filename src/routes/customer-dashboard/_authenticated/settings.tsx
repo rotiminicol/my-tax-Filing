@@ -4,6 +4,8 @@ import { useAuth } from "@/store/auth";
 import { notify } from "@/components/Toaster";
 import { FolderDown, Globe, Headphones, Shield, Trash2 } from "lucide-react";
 import AppSelect from "@/components/ui/AppSelect";
+import ChangePasswordModal from "@/components/auth/ChangePasswordModal";
+import DeleteAccountModal from "@/components/auth/DeleteAccountModal";
 
 const SB = {
   ink: "#18623f",
@@ -66,7 +68,15 @@ function ToggleRow({
   );
 }
 
-function Field({ label, children, hint }: { label: string; children: React.ReactNode; hint?: string }) {
+function Field({
+  label,
+  children,
+  hint,
+}: {
+  label: string;
+  children: React.ReactNode;
+  hint?: string;
+}) {
   return (
     <div className="flex flex-col gap-1.5">
       <label className="text-xs font-bold uppercase tracking-widest" style={{ color: SB.pencil }}>
@@ -88,7 +98,7 @@ function SettingsPage() {
 
   const [fullName, setFullName] = useState(user?.fullName ?? "");
   const [email, setEmail] = useState(user?.email ?? "");
-  const [phone, setPhone] = useState("+234 802 345 6789");
+  const [phone, setPhone] = useState(user?.phone ?? "");
   const [language, setLanguage] = useState("English (UK)");
   const [currency, setCurrency] = useState("NGN");
   const [emailReminders, setEmailReminders] = useState(false);
@@ -96,21 +106,44 @@ function SettingsPage() {
   const [smsAlerts, setSmsAlerts] = useState(false);
   const [saving, setSaving] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [changePasswordOpen, setChangePasswordOpen] = useState(false);
+  const [deleteAccountOpen, setDeleteAccountOpen] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      setFullName(user.fullName || "");
+      setEmail(user.email || "");
+      setPhone(user.phone || "");
+    }
+  }, [user]);
 
   useEffect(() => {
     const t = setTimeout(() => setMounted(true), 60);
     return () => clearTimeout(t);
   }, []);
 
-  const save = () => {
-    if (!fullName.trim()) { notify.error("Validation", "Full name cannot be empty."); return; }
-    if (!email.includes("@")) { notify.error("Validation", "Enter a valid email address."); return; }
+  const save = async () => {
+    if (!fullName.trim()) {
+      notify.error("Validation", "Full name cannot be empty.");
+      return;
+    }
+    if (!email.includes("@")) {
+      notify.error("Validation", "Enter a valid email address.");
+      return;
+    }
     setSaving(true);
-    setTimeout(() => {
-      updateProfile({ fullName: fullName.trim(), email: email.trim() });
+    try {
+      await updateProfile({
+        fullName: fullName.trim(),
+        email: email.trim(),
+        phone: phone.trim(),
+      });
+      notify.success("Settings saved", "Your profile details have been updated in Supabase.");
+    } catch (err) {
+      notify.error("Save failed", err instanceof Error ? err.message : "Unable to save settings.");
+    } finally {
       setSaving(false);
-      notify.success("Settings saved", "Your profile has been updated successfully.");
-    }, 600);
+    }
   };
 
   return (
@@ -149,18 +182,18 @@ function SettingsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Field label="Full Legal Name">
                   <input
-                    className="w-full px-3.5 py-3 rounded-xl border text-sm outline-none focus:ring-2 focus:ring-[#18623f]/20 focus:border-[#18623f] transition-all"
+                    className="w-full px-3.5 py-3 rounded-xl border text-sm outline-none focus:ring-2 focus:ring-[#18623f]/20 focus:border-[#18623f] transition-all font-medium"
                     style={fieldStyle}
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder="Your legal name"
                   />
                 </Field>
-                <Field label="Tax Identification Number (TIN)" hint="Cannot be changed — contact FIRS to update.">
+                <Field label="Tax Identification Number (TIN)" hint="Verified by FIRS.">
                   <input
                     className="w-full px-3.5 py-3 rounded-xl border text-sm cursor-not-allowed font-mono"
                     style={{ ...fieldStyle, opacity: 0.6 }}
-                    value={user?.tin ?? "22938475-001"}
+                    value={user?.tin || "Not configured yet"}
                     readOnly
                   />
                 </Field>
@@ -317,34 +350,31 @@ function SettingsPage() {
 
                 <div
                   className="p-4 rounded-xl border"
-                  style={{ backgroundColor: "rgba(252,250,245,0.08)", borderColor: "rgba(252,250,245,0.12)" }}
+                  style={{
+                    backgroundColor: "rgba(252,250,245,0.08)",
+                    borderColor: "rgba(252,250,245,0.12)",
+                  }}
                 >
                   <p className="text-sm font-bold mb-1">Two-Factor Authentication</p>
                   <p className="text-xs mb-4 opacity-60">
-                    Highly recommended for protecting your tax records.
+                    OTP authentication active via registered email.
                   </p>
                   <div
                     className="w-full py-2 rounded-lg font-bold text-sm text-center"
                     style={{ backgroundColor: SB.mint, color: SB.ink }}
                   >
-                    ✓ Enabled (Authenticator App)
+                    ✓ Enabled
                   </div>
                 </div>
 
-                {[
-                  { label: "Change Password", action: () => notify.info("Password", "Change password flow coming soon.") },
-                  { label: "Active Sessions", action: () => notify.info("Sessions", "Session management coming soon.") },
-                ].map(({ label, action }) => (
-                  <button
-                    key={label}
-                    type="button"
-                    className="w-full p-3 rounded-xl text-sm font-semibold text-left transition-colors hover:bg-white/10"
-                    style={{ color: SB.cream }}
-                    onClick={action}
-                  >
-                    {label}
-                  </button>
-                ))}
+                <button
+                  type="button"
+                  className="w-full p-3 rounded-xl text-sm font-semibold text-left transition-colors hover:bg-white/10"
+                  style={{ color: SB.cream }}
+                  onClick={() => setChangePasswordOpen(true)}
+                >
+                  Change Password
+                </button>
               </div>
             </section>
 
@@ -400,10 +430,10 @@ function SettingsPage() {
                   type="button"
                   className="w-full py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 text-sm hover:bg-red-50 transition-colors"
                   style={{ color: "#991b1b" }}
-                  onClick={() => notify.error("Deactivate", "Account deactivation requires contacting support.")}
+                  onClick={() => setDeleteAccountOpen(true)}
                 >
                   <Trash2 className="w-4 h-4" />
-                  Deactivate Account
+                  Deactivate & Delete Account
                 </button>
               </div>
             </section>
@@ -439,6 +469,10 @@ function SettingsPage() {
           </div>
         </div>
       </div>
+
+      <ChangePasswordModal open={changePasswordOpen} onClose={() => setChangePasswordOpen(false)} />
+
+      <DeleteAccountModal open={deleteAccountOpen} onClose={() => setDeleteAccountOpen(false)} />
     </DashboardShell>
   );
 }

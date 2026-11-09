@@ -69,14 +69,15 @@ function SignupPage() {
 
   const savedSignup = loadSavedSignup();
 
-  const [form, setForm] = useState(() =>
-    savedSignup?.form ?? {
-      fullName: "",
-      email: "",
-      phone: "",
-      password: "",
-      confirmPassword: "",
-    }
+  const [form, setForm] = useState(
+    () =>
+      savedSignup?.form ?? {
+        fullName: "",
+        email: "",
+        phone: "",
+        password: "",
+        confirmPassword: "",
+      },
   );
 
   const passwordRequirements = [
@@ -84,7 +85,10 @@ function SignupPage() {
     { text: "One uppercase letter", met: /[A-Z]/.test(form.password) },
     { text: "One lowercase letter", met: /[a-z]/.test(form.password) },
     { text: "One number", met: /[0-9]/.test(form.password) },
-    { text: "One special character", met: /[!@#$%^&*(),.?":{}|<>_\-+=[\]\\;/]/.test(form.password) },
+    {
+      text: "One special character",
+      met: /[!@#$%^&*(),.?":{}|<>_\-+=[\]\\;/]/.test(form.password),
+    },
   ];
   const unmetRequirements = passwordRequirements.filter((r) => !r.met);
 
@@ -94,10 +98,7 @@ function SignupPage() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    sessionStorage.setItem(
-      SIGNUP_FORM_STATE_KEY,
-      JSON.stringify({ form, agree })
-    );
+    sessionStorage.setItem(SIGNUP_FORM_STATE_KEY, JSON.stringify({ form, agree }));
   }, [form, agree]);
 
   const selectedPlan = plan as PlanTier | undefined;
@@ -121,12 +122,27 @@ function SignupPage() {
       errs.email = "Please enter a valid email address.";
     }
 
+    let formattedPhone = "";
+    if (!form.phone.trim()) {
+      errs.phone = "Phone number is required for account security and compliance.";
+    } else {
+      const rawDigits = form.phone.replace(/\D/g, "");
+      if (rawDigits.length < 10) {
+        errs.phone = "Please enter a valid phone number (at least 10 digits).";
+      } else {
+        formattedPhone = rawDigits.startsWith("234")
+          ? `+${rawDigits}`
+          : `+234${rawDigits.replace(/^0+/, "")}`;
+      }
+    }
+
     const p = form.password;
     if (p.length < 8) errs.password = "Must be at least 8 characters.";
     else if (!/[A-Z]/.test(p)) errs.password = "Must include at least one uppercase letter.";
     else if (!/[a-z]/.test(p)) errs.password = "Must include at least one lowercase letter.";
     else if (!/[0-9]/.test(p)) errs.password = "Must include at least one number.";
-    else if (!/[!@#$%^&*(),.?":{}|<>_\-+=[\]\\;/]/.test(p)) errs.password = "Must include at least one special character.";
+    else if (!/[!@#$%^&*(),.?":{}|<>_\-+=[\]\\;/]/.test(p))
+      errs.password = "Must include at least one special character.";
 
     if (form.confirmPassword !== form.password) errs.confirmPassword = "Passwords do not match.";
     if (!agree) errs.agree = "You must accept the terms to continue.";
@@ -141,6 +157,7 @@ function SignupPage() {
       const u = await signUp({
         fullName: form.fullName,
         email: form.email,
+        phone: formattedPhone || undefined,
         password: form.password,
         plan: selectedPlan,
         accountType: selectedAccountType,
@@ -148,9 +165,22 @@ function SignupPage() {
       });
       notify.success("Account created", `Welcome, ${u.fullName}. Verify your email next.`);
       sessionStorage.removeItem(SIGNUP_FORM_STATE_KEY);
-      navigate("/customer-dashboard/verify-email");
+      navigate(
+        `/customer-dashboard/verify-email?email=${encodeURIComponent(form.email.trim().toLowerCase())}`,
+      );
     } catch (err) {
-      notify.error("Sign-up failed", err instanceof Error ? err.message : "Please try again.");
+      const msg = err instanceof Error ? err.message : "Please try again.";
+      if (msg.toLowerCase().includes("email") && msg.toLowerCase().includes("exist")) {
+        setErrors((prev) => ({ ...prev, email: msg }));
+      } else if (
+        msg.toLowerCase().includes("phone") &&
+        (msg.toLowerCase().includes("exist") ||
+          msg.toLowerCase().includes("associated") ||
+          msg.toLowerCase().includes("registered"))
+      ) {
+        setErrors((prev) => ({ ...prev, phone: msg }));
+      }
+      notify.error("Sign-up failed", msg);
     } finally {
       setBusy(false);
       useLoadingStore.getState().hideLoader();
@@ -272,10 +302,14 @@ function SignupPage() {
           />
 
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-bold" style={{ color: INK }}>Phone Number</label>
+            <label className="text-sm font-bold" style={{ color: INK }}>
+              Phone Number
+            </label>
             <div className="flex items-center gap-2 border-b-[3px]" style={{ borderColor: INK }}>
               <NigeriaFlag />
-              <span className="text-base font-bold pb-2" style={{ color: INK }}>+234</span>
+              <span className="text-base font-bold pb-2" style={{ color: INK }}>
+                +234
+              </span>
               <input
                 type="tel"
                 autoComplete="tel"
@@ -288,6 +322,9 @@ function SignupPage() {
                 style={{ color: INK }}
               />
             </div>
+            {errors.phone && (
+              <p className="text-[11px] font-semibold text-red-600 -mt-1">{errors.phone}</p>
+            )}
           </div>
 
           <SignupField
@@ -320,7 +357,10 @@ function SignupPage() {
             error={errors.confirmPassword}
           />
 
-          <label htmlFor="agree-checkbox" className="flex items-start gap-3 mt-1 cursor-pointer select-none">
+          <label
+            htmlFor="agree-checkbox"
+            className="flex items-start gap-3 mt-1 cursor-pointer select-none"
+          >
             <input
               id="agree-checkbox"
               type="checkbox"
@@ -338,18 +378,31 @@ function SignupPage() {
             >
               {agree && <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />}
             </div>
-            <span className="text-xs leading-relaxed font-semibold" style={{ color: INK, opacity: 0.7 }}>
+            <span
+              className="text-xs leading-relaxed font-semibold"
+              style={{ color: INK, opacity: 0.7 }}
+            >
               I agree to the{" "}
-              <Link to="/legal/terms" className="font-black underline hover:no-underline" style={{ color: INK }}>
+              <Link
+                to="/legal/terms"
+                className="font-black underline hover:no-underline"
+                style={{ color: INK }}
+              >
                 Terms of Service
               </Link>{" "}
               and{" "}
-              <Link to="/legal/privacy" className="font-black underline hover:no-underline" style={{ color: INK }}>
+              <Link
+                to="/legal/privacy"
+                className="font-black underline hover:no-underline"
+                style={{ color: INK }}
+              >
                 Privacy Policy
               </Link>
             </span>
           </label>
-          {errors.agree && <p className="text-[11px] font-semibold text-red-600 -mt-2">{errors.agree}</p>}
+          {errors.agree && (
+            <p className="text-[11px] font-semibold text-red-600 -mt-2">{errors.agree}</p>
+          )}
 
           <button
             type="submit"
