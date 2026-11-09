@@ -44,3 +44,4 @@ export function useFeatureAccess(feature: FeatureKey) {
 
   return { allowed, limit, requiredPlan, incrementUsage, getUsage };
 }
+

@@ -27,3 +27,4 @@ export function PlanBadge({ plan, size = "md" }: PlanBadgeProps) {
 }
 
 export default PlanBadge;
+
