@@ -150,3 +150,25 @@ export async function sendSupportTicketConfirmation(params: {
     variables: params,
   });
 }
+
+export async function sendSupportTeamInquiryAlert(params: {
+  ticketId: string;
+  fullName: string;
+  email: string;
+  phone?: string;
+  clientType: string;
+  category?: string;
+  subject: string;
+  message: string;
+  submittedAt?: string;
+  targetSupportEmail?: string;
+}) {
+  const toEmail = params.targetSupportEmail || "hello@taxfiling.com.ng";
+  return sendAppEmail({
+    templateId: "support_team_alert",
+    to: toEmail,
+    replyTo: params.email,
+    customSubject: `[Inquiry #${params.ticketId}] ${params.subject} — ${params.fullName}`,
+    variables: params,
+  });
+}

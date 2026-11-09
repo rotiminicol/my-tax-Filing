@@ -2,7 +2,11 @@ import { useMemo, useState, useEffect } from "react";
 import DashboardShell from "@/components/layout/DashboardShell";
 import { notify } from "@/components/Toaster";
 import { useAuth } from "@/store/auth";
-import { sendSupportTicketConfirmation } from "@/lib/email/emailClient";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  sendSupportTicketConfirmation,
+  sendSupportTeamInquiryAlert,
+} from "@/lib/email/emailClient";
 import {
   ArrowRight,
   ChevronDown,
@@ -89,6 +93,41 @@ function SupportPage() {
     },
   ]);
 
+  useEffect(() => {
+    if (!user?.id && !user?.email) return;
+
+    supabase
+      .from("contact_messages")
+      .select("ticket_id, subject, status, created_at")
+      .or(
+        `user_id.eq.${user?.id || "00000000-0000-0000-0000-000000000000"},email.eq.${user?.email || ""}`,
+      )
+      .order("created_at", { ascending: false })
+      .then(({ data, error }) => {
+        if (!error && data && data.length > 0) {
+          setTicketsList(
+            data.map((t) => ({
+              id: t.ticket_id,
+              subject: t.subject,
+              status:
+                t.status === "new"
+                  ? "In Review"
+                  : t.status === "in_progress"
+                    ? "Investigating"
+                    : t.status === "resolved"
+                      ? "Resolved"
+                      : t.status,
+              date: new Date(t.created_at).toLocaleDateString("en-NG", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              }),
+            })),
+          );
+        }
+      });
+  }, [user]);
+
   const handleCreateTicket = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!ticketSubject.trim() || !ticketMessage.trim()) {
@@ -97,17 +136,56 @@ function SupportPage() {
     }
 
     setSubmittingTicket(true);
-    const newId = `TK-2026-${Math.floor(100 + Math.random() * 900)}`;
+    const todayStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+    const randomHex = Math.random().toString(36).substring(2, 6).toUpperCase();
+    let newId = `TK-${todayStr}-${randomHex}`;
 
     try {
+      // 1. Persist to contact_messages
+      const { data: dbData, error: dbError } = await supabase
+        .from("contact_messages")
+        .insert({
+          ticket_id: newId,
+          user_id: user?.id || null,
+          client_type: user?.accountType === "organization" ? "business" : "individual",
+          name: user?.fullName || "Valued Taxpayer",
+          email: user?.email || "user@taxfiling.com.ng",
+          phone: user?.phone || null,
+          category: ticketCategory,
+          subject: `${ticketCategory}: ${ticketSubject.trim()}`,
+          message: ticketMessage.trim(),
+          source: "dashboard_support",
+          status: "new",
+        })
+        .select("ticket_id")
+        .maybeSingle();
+
+      if (!dbError && dbData?.ticket_id) {
+        newId = dbData.ticket_id;
+      }
+
+      // 2. Dispatch Confirmation Email to User
       if (user?.email) {
-        await sendSupportTicketConfirmation({
+        sendSupportTicketConfirmation({
           email: user.email,
           fullName: user.fullName,
           ticketId: newId,
           subject: `${ticketCategory}: ${ticketSubject.trim()}`,
           message: ticketMessage.trim(),
-        });
+        }).catch((err) => console.warn("Email confirmation fallback:", err));
+
+        // 3. Dispatch Staff Alert
+        sendSupportTeamInquiryAlert({
+          ticketId: newId,
+          fullName: user.fullName || "Registered User",
+          email: user.email,
+          phone: user.phone,
+          clientType: user.accountType === "organization" ? "business" : "individual",
+          category: ticketCategory,
+          subject: ticketSubject.trim(),
+          message: ticketMessage.trim(),
+          submittedAt: new Date().toUTCString(),
+        }).catch((err) => console.warn("Staff alert fallback:", err));
       }
 
       setTicketsList((prev) => [

@@ -137,3 +137,83 @@ export function renderBatchReceiptsProcessed(vars: {
     }),
   };
 }
+
+export function renderSupportTeamInquiryAlert(vars: {
+  ticketId: string;
+  fullName: string;
+  email: string;
+  phone?: string;
+  clientType: string;
+  subject: string;
+  category?: string;
+  message: string;
+  submittedAt?: string;
+}): { subject: string; html: string } {
+  const dateStr = vars.submittedAt || new Date().toUTCString();
+  const phoneText = vars.phone || "Not provided";
+  const clientBadge =
+    vars.clientType === "business" ? "Business / Corporate" : "Individual / Tenant";
+
+  const content = `
+    <p>A new customer inquiry has just been submitted via the <strong>TaxFilling Contact Desk</strong>.</p>
+
+    <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background-color: #fcfaf5; border: 1px solid rgba(24,98,63,0.18); border-radius: 12px; margin: 20px 0; font-size: 13px;">
+      <tr>
+        <td style="padding: 10px 16px; border-bottom: 1px solid rgba(24,98,63,0.08); color: #6b7280; font-weight: 600; width: 35%;">Ticket Reference</td>
+        <td style="padding: 10px 16px; border-bottom: 1px solid rgba(24,98,63,0.08); font-weight: 800; color: #18623f; font-family: monospace;">#${vars.ticketId}</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 16px; border-bottom: 1px solid rgba(24,98,63,0.08); color: #6b7280; font-weight: 600;">Customer Name</td>
+        <td style="padding: 10px 16px; border-bottom: 1px solid rgba(24,98,63,0.08); font-weight: 700; color: #111827;">${vars.fullName}</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 16px; border-bottom: 1px solid rgba(24,98,63,0.08); color: #6b7280; font-weight: 600;">Email Address</td>
+        <td style="padding: 10px 16px; border-bottom: 1px solid rgba(24,98,63,0.08);"><a href="mailto:${vars.email}" style="color: #18623f; font-weight: 600; text-decoration: underline;">${vars.email}</a></td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 16px; border-bottom: 1px solid rgba(24,98,63,0.08); color: #6b7280; font-weight: 600;">Phone Number</td>
+        <td style="padding: 10px 16px; border-bottom: 1px solid rgba(24,98,63,0.08); color: #374151;">${phoneText}</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 16px; border-bottom: 1px solid rgba(24,98,63,0.08); color: #6b7280; font-weight: 600;">Client Type</td>
+        <td style="padding: 10px 16px; border-bottom: 1px solid rgba(24,98,63,0.08); color: #18623f; font-weight: 700;">${clientBadge}</td>
+      </tr>
+      ${
+        vars.category
+          ? `<tr>
+        <td style="padding: 10px 16px; border-bottom: 1px solid rgba(24,98,63,0.08); color: #6b7280; font-weight: 600;">Topic Category</td>
+        <td style="padding: 10px 16px; border-bottom: 1px solid rgba(24,98,63,0.08); color: #374151;">${vars.category}</td>
+      </tr>`
+          : ""
+      }
+      <tr>
+        <td style="padding: 10px 16px; border-bottom: 1px solid rgba(24,98,63,0.08); color: #6b7280; font-weight: 600;">Subject</td>
+        <td style="padding: 10px 16px; border-bottom: 1px solid rgba(24,98,63,0.08); font-weight: 700; color: #111827;">${vars.subject}</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 16px; color: #6b7280; font-weight: 600;">Received Time</td>
+        <td style="padding: 10px 16px; color: #6b7280;">${dateStr}</td>
+      </tr>
+    </table>
+
+    <div style="background-color: #ffffff; border: 2px solid #18623f; border-radius: 10px; padding: 18px 22px; margin: 20px 0;">
+      <p style="margin: 0 0 8px 0; font-size: 11px; font-weight: 800; color: #18623f; text-transform: uppercase; letter-spacing: 0.5px;">Message Details:</p>
+      <div style="font-size: 14px; line-height: 1.65; color: #1f2937; white-space: pre-line;">${vars.message}</div>
+    </div>
+
+    <p style="font-size: 12px; color: #6b7280;">You can reply directly to this notification to reply to <strong>${vars.email}</strong>, or handle the inquiry in the staff admin panel.</p>
+  `;
+
+  return {
+    subject: `[New Inquiry #${vars.ticketId}] ${vars.subject} — ${vars.fullName} (${vars.clientType})`,
+    html: renderBaseEmailLayout({
+      title: "New Customer Inquiry",
+      preheader: `Ticket #${vars.ticketId} from ${vars.fullName} (${vars.clientType})`,
+      badge: "Team Alert",
+      badgeColor: "yellow",
+      contentHtml: content,
+      ctaText: `Reply to ${vars.fullName}`,
+      ctaUrl: `mailto:${vars.email}?subject=Re: Ticket %23${vars.ticketId} - ${encodeURIComponent(vars.subject)}`,
+    }),
+  };
+}

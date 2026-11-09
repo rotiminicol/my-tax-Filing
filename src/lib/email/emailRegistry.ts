@@ -799,6 +799,29 @@ export const EMAIL_TEMPLATES: EmailTemplateDefinition[] = [
         d as Parameters<typeof support.renderBatchReceiptsProcessed>[0],
       ),
   },
+  {
+    id: "support_team_alert",
+    name: "Staff Alert: New Inquiry",
+    category: "support",
+    description: "Internal team alert dispatched when a customer submits a contact message",
+    defaultSubject: "[New Inquiry #TK-8910] Landlord TIN Query — Adebayo Olawale (individual)",
+    sampleData: {
+      ticketId: "TK-8910",
+      fullName: "Adebayo Olawale",
+      email: "adebayo@example.com",
+      phone: "+234 803 123 4567",
+      clientType: "individual",
+      category: "Rent Relief & Receipt Claims",
+      subject: "Landlord TIN Query",
+      message:
+        "Hello, my landlord is an elderly individual without a corporate TIN. Can I use their National Identification Number (NIN) for my rent relief claim?",
+      submittedAt: "Mon, 09 Nov 2026 19:45:00 GMT",
+    },
+    render: (d) =>
+      support.renderSupportTeamInquiryAlert(
+        d as Parameters<typeof support.renderSupportTeamInquiryAlert>[0],
+      ),
+  },
 ];
 
 export function getEmailTemplate(templateId: string): EmailTemplateDefinition | undefined {

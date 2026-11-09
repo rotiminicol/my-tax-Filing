@@ -634,6 +634,66 @@ export type Database = {
         };
         Relationships: [];
       };
+      contact_messages: {
+        Row: {
+          admin_notes: string | null;
+          category: string;
+          client_type: string;
+          created_at: string;
+          email: string;
+          id: string;
+          message: string;
+          metadata: Json | null;
+          name: string;
+          phone: string | null;
+          priority: string;
+          source: string;
+          status: string;
+          subject: string;
+          ticket_id: string;
+          updated_at: string;
+          user_id: string | null;
+        };
+        Insert: {
+          admin_notes?: string | null;
+          category?: string;
+          client_type?: string;
+          created_at?: string;
+          email: string;
+          id?: string;
+          message: string;
+          metadata?: Json | null;
+          name: string;
+          phone?: string | null;
+          priority?: string;
+          source?: string;
+          status?: string;
+          subject: string;
+          ticket_id: string;
+          updated_at?: string;
+          user_id?: string | null;
+        };
+        Update: {
+          admin_notes?: string | null;
+          category?: string;
+          client_type?: string;
+          created_at?: string;
+          email?: string;
+          id?: string;
+          message?: string;
+          metadata?: Json | null;
+          name?: string;
+          phone?: string | null;
+          priority?: string;
+          source?: string;
+          status?: string;
+          subject?: string;
+          ticket_id?: string;
+          updated_at?: string;
+          user_id?: string | null;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -645,6 +705,21 @@ export type Database = {
           _user_id: string;
         };
         Returns: boolean;
+      };
+      submit_contact_message: {
+        Args: {
+          p_name: string;
+          p_email: string;
+          p_phone?: string | null;
+          p_client_type?: string;
+          p_category?: string;
+          p_subject?: string;
+          p_message?: string;
+          p_user_id?: string | null;
+          p_source?: string;
+          p_metadata?: Json;
+        };
+        Returns: Json;
       };
     };
     Enums: {
