@@ -169,6 +169,7 @@ function SignupPage() {
         `/customer-dashboard/verify-email?email=${encodeURIComponent(form.email.trim().toLowerCase())}`,
       );
     } catch (err) {
+      console.error("[SignUp Error]", err);
       const msg = err instanceof Error ? err.message : "Please try again.";
       if (msg.toLowerCase().includes("email") && msg.toLowerCase().includes("exist")) {
         setErrors((prev) => ({ ...prev, email: msg }));

@@ -32,8 +32,15 @@ export async function sendAppEmail(options: SendAppEmailOptions): Promise<SendEm
   const { subject: defaultSubject, html } = tpl.render(variables);
   const subject = customSubject || defaultSubject;
 
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
-  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+  const supabaseUrl =
+    (import.meta.env.VITE_SUPABASE_URL as string) ||
+    (typeof process !== "undefined" ? process.env.SUPABASE_URL : undefined);
+  const anonKey =
+    (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string) ||
+    (import.meta.env.VITE_SUPABASE_ANON_KEY as string) ||
+    (typeof process !== "undefined"
+      ? process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY
+      : undefined);
 
   if (!supabaseUrl || !anonKey) {
     console.warn("Supabase environment variables not found; simulating email dispatch");
