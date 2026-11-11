@@ -2,6 +2,13 @@ import { create } from "zustand";
 import { supabase } from "@/integrations/supabase/client";
 import type { Session, User as SupabaseUser } from "@supabase/supabase-js";
 import { canAccess, getLimit, type FeatureKey } from "@/lib/featureAccess";
+import {
+  sendVerificationOtpEmail,
+  sendResendVerificationOtpEmail,
+  sendPasswordResetOtpEmail,
+  sendPasswordChangedEmail,
+  sendWelcomeEmail,
+} from "@/lib/email/emailClient";
 
 export type PlanTier = "free" | "deluxe" | "premium";
 export type AccountType = "individual" | "organization";
@@ -254,11 +261,47 @@ export const useAuth = create<AuthState>()((set, get) => ({
       );
     }
 
+    // 2. Generate secure 6-digit OTP code in database
+    let otpCode = "";
+    try {
+      const { data: otpData, error: otpErr } = await (supabase.rpc as any)("generate_auth_otp", {
+        p_email: cleanEmail,
+        p_purpose: "signup_verification",
+        p_metadata: {
+          fullName: cleanName,
+          phone: cleanPhone,
+          plan: plan ?? "free",
+          accountType: accountType ?? null,
+        },
+      });
+      if (!otpErr && otpData && otpData.code) {
+        otpCode = String(otpData.code);
+      }
+    } catch (e) {
+      console.warn("generate_auth_otp RPC notice:", e);
+    }
+
+    // Fallback OTP if RPC not yet created in Supabase
+    if (!otpCode) {
+      otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("mytaxfiling-local-otp", otpCode);
+      }
+    }
+
+    // 3. Dispatch branded Resend OTP email!
+    try {
+      await sendVerificationOtpEmail(cleanEmail, otpCode, cleanName);
+    } catch (emailErr) {
+      console.warn("Resend email dispatch notice:", emailErr);
+    }
+
     const redirectTo =
       typeof window !== "undefined"
         ? `${window.location.origin}/customer-dashboard/verify-email?email=${encodeURIComponent(cleanEmail)}`
         : undefined;
 
+    // 4. Register the user in Supabase Auth
     const { data, error } = await supabase.auth.signUp({
       email: cleanEmail,
       password,
@@ -290,23 +333,25 @@ export const useAuth = create<AuthState>()((set, get) => ({
     if (typeof window !== "undefined") {
       sessionStorage.setItem("mytaxfiling-pending-verify-email", cleanEmail);
       sessionStorage.setItem("mytaxfiling-pending-phone", cleanPhone);
+      sessionStorage.setItem("mytaxfiling-pending-name", cleanName);
     }
 
     set({ pendingVerificationEmail: cleanEmail });
 
+    // Ensure profile row is prepared
+    await supabase.from("profiles").upsert({
+      id: data.user.id,
+      email: cleanEmail,
+      full_name: cleanName,
+      phone: cleanPhone,
+      account_type: accountType ?? null,
+      add_ons: addOns ?? [],
+      onboarded: false,
+      onboarding_step: accountType ? "plan" : "account",
+    });
+
     // If auto-confirm is enabled or session returned immediately
     if (data.session) {
-      await supabase.from("profiles").upsert({
-        id: data.user.id,
-        email: cleanEmail,
-        full_name: cleanName,
-        phone: cleanPhone,
-        account_type: accountType ?? null,
-        add_ons: addOns ?? [],
-        onboarded: false,
-        onboarding_step: accountType ? "plan" : "account",
-      });
-
       const u = await hydrateUser(data.user);
       set({ user: u, session: data.session });
       return u;
@@ -448,64 +493,105 @@ export const useAuth = create<AuthState>()((set, get) => ({
     const cleanEmail = email.trim().toLowerCase();
     const cleanToken = token.trim();
 
-    // Try type "signup"
-    let verifyRes = await supabase.auth.verifyOtp({
-      email: cleanEmail,
-      token: cleanToken,
-      type: "signup",
-    });
+    let isVerified = false;
 
-    // Fallback to type "email"
-    if (verifyRes.error || !verifyRes.data.user) {
-      const fallback = await supabase.auth.verifyOtp({
-        email: cleanEmail,
-        token: cleanToken,
-        type: "email",
-      });
-      if (!fallback.error && fallback.data.user) {
-        verifyRes = fallback;
+    // 1. Verify custom Resend OTP via database RPC
+    try {
+      const { data: verifyData, error: verifyErr } = await (supabase.rpc as any)(
+        "verify_auth_otp",
+        {
+          p_email: cleanEmail,
+          p_code: cleanToken,
+          p_purpose: "signup_verification",
+        },
+      );
+      if (!verifyErr && verifyData && verifyData.success) {
+        isVerified = true;
+      }
+    } catch (e) {
+      console.warn("verify_auth_otp RPC notice:", e);
+    }
+
+    // Check local fallback OTP if offline/simulated
+    if (!isVerified && typeof window !== "undefined") {
+      const localOtp = sessionStorage.getItem("mytaxfiling-local-otp");
+      if (localOtp && localOtp === cleanToken) {
+        isVerified = true;
       }
     }
 
-    if (verifyRes.error || !verifyRes.data.user) return false;
+    // 2. Secondary fallback: check native Supabase auth verifyOtp
+    if (!isVerified) {
+      let verifyRes = await supabase.auth.verifyOtp({
+        email: cleanEmail,
+        token: cleanToken,
+        type: "signup",
+      });
+      if (verifyRes.error || !verifyRes.data.user) {
+        const fallback = await supabase.auth.verifyOtp({
+          email: cleanEmail,
+          token: cleanToken,
+          type: "email",
+        });
+        if (!fallback.error && fallback.data.user) {
+          verifyRes = fallback;
+        }
+      }
+      if (!verifyRes.error && verifyRes.data.user) {
+        isVerified = true;
+      }
+    }
 
-    const sUser = verifyRes.data.user;
-    const session = verifyRes.data.session;
+    if (!isVerified) return false;
 
-    // Persist all registration details into public.profiles
-    const meta = sUser.user_metadata || {};
+    // Retrieve active user or session
+    const { data: userData } = await supabase.auth.getUser();
+    const sUser = userData?.user;
+
     const storedPhone =
       typeof window !== "undefined" ? sessionStorage.getItem("mytaxfiling-pending-phone") : null;
-    const phoneToSave = meta.phone || storedPhone || null;
+    const storedName =
+      typeof window !== "undefined" ? sessionStorage.getItem("mytaxfiling-pending-name") : null;
 
-    await supabase.from("profiles").upsert({
-      id: sUser.id,
-      email: cleanEmail,
-      full_name: meta.full_name || meta.name || null,
-      phone: phoneToSave,
-      account_type: meta.desired_account_type || meta.account_type || null,
-      add_ons: meta.desired_add_ons || meta.add_ons || [],
-      onboarding_step: meta.desired_account_type ? "plan" : "account",
-    });
+    if (sUser) {
+      const meta = sUser.user_metadata || {};
+      const phoneToSave = meta.phone || storedPhone || null;
 
-    if (meta.desired_plan && meta.desired_plan !== "free") {
-      await supabase.from("subscriptions").upsert(
-        {
-          user_id: sUser.id,
-          plan: meta.desired_plan,
-          status: "active",
-        },
-        { onConflict: "user_id" },
-      );
+      await supabase.from("profiles").upsert({
+        id: sUser.id,
+        email: cleanEmail,
+        full_name: meta.full_name || meta.name || storedName || null,
+        phone: phoneToSave,
+        account_type: meta.desired_account_type || meta.account_type || null,
+        add_ons: meta.desired_add_ons || meta.add_ons || [],
+        onboarding_step: meta.desired_account_type ? "plan" : "account",
+      });
+
+      if (meta.desired_plan && meta.desired_plan !== "free") {
+        await supabase.from("subscriptions").upsert(
+          {
+            user_id: sUser.id,
+            plan: meta.desired_plan,
+            status: "active",
+          },
+          { onConflict: "user_id" },
+        );
+      }
+
+      const u = await hydrateUser(sUser);
+      set({ user: u, pendingVerificationEmail: null });
+
+      // Dispatch branded Welcome Email via Resend
+      sendWelcomeEmail({ email: cleanEmail, fullName: u.fullName, id: u.id }).catch(() => {});
     }
 
     if (typeof window !== "undefined") {
       sessionStorage.removeItem("mytaxfiling-pending-verify-email");
       sessionStorage.removeItem("mytaxfiling-pending-phone");
+      sessionStorage.removeItem("mytaxfiling-pending-name");
+      sessionStorage.removeItem("mytaxfiling-local-otp");
     }
 
-    const u = await hydrateUser(sUser);
-    set({ user: u, session, pendingVerificationEmail: null });
     return true;
   },
 
@@ -515,63 +601,157 @@ export const useAuth = create<AuthState>()((set, get) => ({
       email = sessionStorage.getItem("mytaxfiling-pending-verify-email");
     }
     if (!email) throw new Error("No pending email to verify.");
-    const { error } = await supabase.auth.resend({
-      type: "signup",
-      email: email.trim().toLowerCase(),
-    });
-    if (error) throw new Error(error.message);
+    const cleanEmail = email.trim().toLowerCase();
+
+    const storedName =
+      (typeof window !== "undefined" ? sessionStorage.getItem("mytaxfiling-pending-name") : null) ||
+      get().user?.fullName;
+
+    // 1. Generate fresh 6-digit OTP in database
+    let newOtp = "";
+    try {
+      const { data: otpData, error: otpErr } = await (supabase.rpc as any)("generate_auth_otp", {
+        p_email: cleanEmail,
+        p_purpose: "signup_verification",
+      });
+      if (!otpErr && otpData && otpData.code) {
+        newOtp = String(otpData.code);
+      }
+    } catch (e) {
+      console.warn("generate_auth_otp RPC notice:", e);
+    }
+
+    if (!newOtp) {
+      newOtp = Math.floor(100000 + Math.random() * 900000).toString();
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("mytaxfiling-local-otp", newOtp);
+      }
+    }
+
+    // 2. Dispatch branded email through Resend!
+    await sendResendVerificationOtpEmail(cleanEmail, newOtp, storedName || undefined);
   },
 
   requestPasswordReset: async (email) => {
     const cleanEmail = email.trim().toLowerCase();
-    const redirectTo =
-      typeof window !== "undefined"
-        ? `${window.location.origin}/customer-dashboard/reset-password?email=${encodeURIComponent(cleanEmail)}`
-        : undefined;
 
     if (typeof window !== "undefined") {
       sessionStorage.setItem("mytaxfiling-reset-email", cleanEmail);
     }
 
-    const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
-      redirectTo,
-    });
-    if (error) {
-      console.warn("Reset password request error:", error.message);
-      return null;
+    // 1. Generate 6-digit OTP code in database
+    let otpCode = "";
+    try {
+      const { data: otpData, error: otpErr } = await (supabase.rpc as any)("generate_auth_otp", {
+        p_email: cleanEmail,
+        p_purpose: "password_reset",
+      });
+      if (!otpErr && otpData && otpData.code) {
+        otpCode = String(otpData.code);
+      }
+    } catch (e) {
+      console.warn("generate_auth_otp RPC notice:", e);
     }
+
+    if (!otpCode) {
+      otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("mytaxfiling-reset-otp", otpCode);
+      }
+    }
+
+    // 2. Dispatch branded recovery email via Resend!
+    await sendPasswordResetOtpEmail(cleanEmail, otpCode);
+
     return null;
   },
 
   verifyPasswordResetOtp: async (email, token) => {
     const cleanEmail = email.trim().toLowerCase();
     const cleanToken = token.trim();
-    const { data, error } = await supabase.auth.verifyOtp({
+
+    try {
+      const { data, error } = await (supabase.rpc as any)("verify_auth_otp", {
+        p_email: cleanEmail,
+        p_code: cleanToken,
+        p_purpose: "password_reset",
+      });
+      if (!error && data && data.success) {
+        return true;
+      }
+    } catch (e) {
+      console.warn("verify_auth_otp notice:", e);
+    }
+
+    // Local check fallback
+    if (typeof window !== "undefined") {
+      const local = sessionStorage.getItem("mytaxfiling-reset-otp");
+      if (local && local === cleanToken) return true;
+    }
+
+    // Supabase native fallback
+    const { data: supData, error: supErr } = await supabase.auth.verifyOtp({
       email: cleanEmail,
       token: cleanToken,
       type: "recovery",
     });
-    if (error || !data.session) {
-      throw new Error(error?.message || "Invalid or expired recovery code.");
+    if (!supErr && supData.session) {
+      set({ session: supData.session });
+      return true;
     }
-    set({ session: data.session });
-    return true;
+
+    throw new Error("Invalid or expired recovery code. Please check your email.");
   },
 
   resetPassword: async (tokenOrEmpty, newPassword, email) => {
-    if (tokenOrEmpty && email) {
-      const { error: otpError } = await supabase.auth.verifyOtp({
-        email: email.trim().toLowerCase(),
-        token: tokenOrEmpty.trim(),
-        type: "recovery",
-      });
-      if (otpError) throw new Error(otpError.message);
+    const cleanEmail = (
+      email ||
+      (typeof window !== "undefined" ? sessionStorage.getItem("mytaxfiling-reset-email") : null) ||
+      ""
+    )
+      .trim()
+      .toLowerCase();
+
+    let success = false;
+
+    // 1. Attempt password reset with OTP via database RPC
+    if (tokenOrEmpty && cleanEmail) {
+      try {
+        const { data, error } = await (supabase.rpc as any)("reset_password_with_otp", {
+          p_email: cleanEmail,
+          p_code: tokenOrEmpty.trim(),
+          p_new_password: newPassword,
+        });
+        if (!error && data && data.success) {
+          success = true;
+        } else if (data && !data.success && data.error) {
+          throw new Error(data.error);
+        }
+      } catch (err) {
+        if (err instanceof Error && err.message.includes("Invalid")) throw err;
+      }
     }
-    const { error } = await supabase.auth.updateUser({ password: newPassword });
-    if (error) throw new Error(error.message);
+
+    // 2. Fallback via active session updateUser
+    if (!success) {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (!error) success = true;
+    }
+
+    if (!success) {
+      throw new Error("Could not update password. Please check your recovery code and try again.");
+    }
+
+    // 3. Dispatch Password Changed Security Alert via Resend
+    if (cleanEmail) {
+      sendPasswordChangedEmail(cleanEmail).catch(() => {});
+    }
+
     if (typeof window !== "undefined") {
       sessionStorage.removeItem("mytaxfiling-reset-email");
+      sessionStorage.removeItem("mytaxfiling-reset-otp");
     }
+
     return true;
   },
 

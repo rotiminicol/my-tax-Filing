@@ -104,6 +104,18 @@ export async function sendVerificationOtpEmail(email: string, otp: string, fullN
   });
 }
 
+export async function sendResendVerificationOtpEmail(
+  email: string,
+  otp: string,
+  fullName?: string,
+) {
+  return sendAppEmail({
+    templateId: "resend_verification_otp",
+    to: email,
+    variables: { fullName, otp, expiresInMinutes: 10 },
+  });
+}
+
 export async function sendPasswordResetOtpEmail(email: string, otp: string, fullName?: string) {
   return sendAppEmail({
     templateId: "password_reset_otp",

@@ -694,6 +694,42 @@ export type Database = {
         };
         Relationships: [];
       };
+      auth_verification_codes: {
+        Row: {
+          attempts: number;
+          code: string;
+          created_at: string;
+          email: string;
+          expires_at: string;
+          id: string;
+          metadata: Json | null;
+          purpose: string;
+          verified_at: string | null;
+        };
+        Insert: {
+          attempts?: number;
+          code: string;
+          created_at?: string;
+          email: string;
+          expires_at: string;
+          id?: string;
+          metadata?: Json | null;
+          purpose: string;
+          verified_at?: string | null;
+        };
+        Update: {
+          attempts?: number;
+          code?: string;
+          created_at?: string;
+          email?: string;
+          expires_at?: string;
+          id?: string;
+          metadata?: Json | null;
+          purpose?: string;
+          verified_at?: string | null;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -718,6 +754,30 @@ export type Database = {
           p_user_id?: string | null;
           p_source?: string;
           p_metadata?: Json;
+        };
+        Returns: Json;
+      };
+      generate_auth_otp: {
+        Args: {
+          p_email: string;
+          p_purpose: string;
+          p_metadata?: Json;
+        };
+        Returns: Json;
+      };
+      verify_auth_otp: {
+        Args: {
+          p_email: string;
+          p_code: string;
+          p_purpose: string;
+        };
+        Returns: Json;
+      };
+      reset_password_with_otp: {
+        Args: {
+          p_email: string;
+          p_code: string;
+          p_new_password: string;
         };
         Returns: Json;
       };

@@ -148,3 +148,4 @@ $$;
 GRANT EXECUTE ON FUNCTION public.submit_contact_message(
   TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, UUID, TEXT, JSONB
 ) TO anon, authenticated, service_role;
+
