@@ -217,3 +217,4 @@ END;
 $$;
 
 GRANT EXECUTE ON FUNCTION public.reset_password_with_otp(TEXT, TEXT, TEXT) TO anon, authenticated, service_role;
+

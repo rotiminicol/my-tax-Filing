@@ -338,20 +338,19 @@ export const useAuth = create<AuthState>()((set, get) => ({
 
     set({ pendingVerificationEmail: cleanEmail });
 
-    // Ensure profile row is prepared
-    await supabase.from("profiles").upsert({
-      id: data.user.id,
-      email: cleanEmail,
-      full_name: cleanName,
-      phone: cleanPhone,
-      account_type: accountType ?? null,
-      add_ons: addOns ?? [],
-      onboarded: false,
-      onboarding_step: accountType ? "plan" : "account",
-    });
-
     // If auto-confirm is enabled or session returned immediately
     if (data.session) {
+      await supabase.from("profiles").upsert({
+        id: data.user.id,
+        email: cleanEmail,
+        full_name: cleanName,
+        phone: cleanPhone,
+        account_type: accountType ?? null,
+        add_ons: addOns ?? [],
+        onboarded: false,
+        onboarding_step: accountType ? "plan" : "account",
+      });
+
       const u = await hydrateUser(data.user);
       set({ user: u, session: data.session });
       return u;
