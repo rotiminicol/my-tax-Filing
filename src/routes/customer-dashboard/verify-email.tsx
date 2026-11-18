@@ -52,7 +52,7 @@ function VerifyPage() {
     setResending(true);
     try {
       await resend(displayEmail);
-      setCooldown(60);
+      setCooldown(30);
       notify.success("Code sent", `We sent a new verification code to ${displayEmail}.`);
     } catch (err) {
       notify.error(

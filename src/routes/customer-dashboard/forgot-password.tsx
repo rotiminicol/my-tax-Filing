@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight, CheckCircle, Mail, KeyRound } from "lucide-react";
 import AuthFocusedLayout from "@/components/auth/AuthFocusedLayout";
 import { useAuth } from "@/store/auth";
@@ -16,6 +16,13 @@ function ForgotPage() {
   const [error, setError] = useState<string | undefined>();
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = window.setInterval(() => setCooldown((value) => Math.max(0, value - 1)), 1000);
+    return () => window.clearInterval(timer);
+  }, [cooldown]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,6 +37,7 @@ function ForgotPage() {
     try {
       await requestReset(cleanEmail);
       setSent(true);
+      setCooldown(30);
       notify.info(
         "Check your inbox",
         "If an account exists, a reset code and link have been sent.",
@@ -183,16 +191,29 @@ function ForgotPage() {
                   Enter Reset OTP Code
                 </button>
 
-                <button
-                  type="button"
-                  onClick={() => setSent(false)}
+                  <button
+                    type="button"
+                  disabled={cooldown > 0 || busy}
+                  onClick={async () => {
+                    if (cooldown > 0) return;
+                    setBusy(true);
+                    try {
+                      await requestReset(email.trim().toLowerCase());
+                      setCooldown(30);
+                      notify.success("Code resent", "A new reset code has been sent if the account exists.");
+                    } catch (err) {
+                      notify.error("Couldn't resend", err instanceof Error ? err.message : "Please try again shortly.");
+                    } finally {
+                      setBusy(false);
+                    }
+                  }}
                   className="w-full h-10 font-black uppercase tracking-[0.15em] flex items-center justify-center gap-2 transition-all hover:opacity-70 text-[11px]"
                   style={{
                     fontFamily: "'Roboto Mono', monospace",
                     color: INK,
                   }}
                 >
-                  Resend Email
+                  {cooldown > 0 ? `Resend available in ${cooldown}s` : "Resend Email"}
                 </button>
               </div>
 

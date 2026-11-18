@@ -29,15 +29,63 @@ function AppClient() {
   return App ? <App /> : null;
 }
 
+// Rendered on the server and while the client bundle loads, so the first paint
+// is branded instead of a blank white page.
+function BootSplash() {
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "#FCFAF5",
+        fontFamily: "ui-sans-serif, system-ui, -apple-system, sans-serif",
+      }}
+    >
+      <div style={{ textAlign: "center" }}>
+        <div
+          style={{
+            width: 46,
+            height: 46,
+            borderRadius: 12,
+            background: "#0B3B2E",
+            color: "#FCFAF5",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            margin: "0 auto 14px",
+            fontSize: 15,
+            fontWeight: 700,
+          }}
+        >
+          MT
+        </div>
+        <div
+          style={{
+            color: "#0B3B2E",
+            fontSize: 12,
+            fontWeight: 600,
+            letterSpacing: "0.14em",
+            textTransform: "uppercase",
+          }}
+        >
+          My Tax Filing
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export const Route = createRootRoute({
   shellComponent: RootShell,
   component: () => (
-    <ClientOnly fallback={null}>
+    <ClientOnly fallback={<BootSplash />}>
       <AppClient />
     </ClientOnly>
   ),
   notFoundComponent: () => (
-    <ClientOnly fallback={null}>
+    <ClientOnly fallback={<BootSplash />}>
       <AppClient />
     </ClientOnly>
   ),

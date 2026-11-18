@@ -13,12 +13,18 @@ export default defineConfig({
     server: { entry: "server" },
   },
   nitro: {
-    preset: "vercel",
+    // Defaults to the Vercel target used in production; set NITRO_PRESET=node-server
+    // to produce a self-contained Node build for local preview.
+    preset: process.env.NITRO_PRESET || "vercel",
   },
   vite: {
     // react-router-dom is used in App.tsx which is loaded client-side via dynamic import.
     // TanStack Start's SSR pass must be able to resolve it, so we inline it instead of
     // treating it as an SSR external.
+    server: {
+      // Allow the sandbox preview tunnel host so the dev server is reachable remotely.
+      allowedHosts: true,
+    },
     ssr: {
       noExternal: ["react-router-dom", "react-router"],
     },

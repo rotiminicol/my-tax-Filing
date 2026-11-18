@@ -1,11 +1,10 @@
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { ArrowLeft, CheckCircle, Circle, ArrowRight, Loader2 } from "lucide-react";
 import AuthFocusedLayout from "@/components/auth/AuthFocusedLayout";
 import AuthInput from "@/components/auth/AuthInput";
 import { useAuth } from "@/store/auth";
 import { notify } from "@/components/Toaster";
-import { supabase } from "@/integrations/supabase/client";
 
 const INK = "#18623f";
 const YELLOW = "#ffe95c";
@@ -33,36 +32,13 @@ function ResetPage() {
   const storedEmail =
     typeof window !== "undefined" ? sessionStorage.getItem("mytaxfiling-reset-email") : null;
 
-  const [hasSession, setHasSession] = useState(false);
-  const [checking, setChecking] = useState(true);
+  const hasSession = false;
   const [email, setEmail] = useState(queryEmail || storedEmail || "");
   const [otp, setOtp] = useState("");
   const [pwd, setPwd] = useState("");
   const [confirm, setConfirm] = useState("");
   const [errs, setErrs] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
-
-  useEffect(() => {
-    let mounted = true;
-    supabase.auth.getSession().then(({ data }) => {
-      if (!mounted) return;
-      if (data.session) {
-        setHasSession(true);
-      }
-      setChecking(false);
-    });
-
-    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") {
-        setHasSession(true);
-      }
-    });
-
-    return () => {
-      mounted = false;
-      sub.subscription.unsubscribe();
-    };
-  }, []);
 
   const passwordRequirements = [
     { text: "At least 8 characters", met: pwd.length >= 8 },
