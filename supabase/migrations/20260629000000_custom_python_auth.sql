@@ -73,12 +73,20 @@ DECLARE
 BEGIN
   IF to_regclass('public.profiles') IS NOT NULL THEN
     ALTER TABLE public.profiles DROP CONSTRAINT IF EXISTS profiles_id_fkey;
-    ALTER TABLE public.profiles ADD CONSTRAINT profiles_id_app_users_fkey FOREIGN KEY (id) REFERENCES public.app_users(id) ON DELETE CASCADE;
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_constraint WHERE conname = 'profiles_id_app_users_fkey'
+    ) THEN
+      ALTER TABLE public.profiles ADD CONSTRAINT profiles_id_app_users_fkey FOREIGN KEY (id) REFERENCES public.app_users(id) ON DELETE CASCADE;
+    END IF;
   END IF;
   FOR c IN
     SELECT conrelid::regclass AS table_name, conname
     FROM pg_constraint
-    WHERE contype = 'f' AND confrelid = 'auth.users'::regclass
+    JOIN pg_class child_table ON child_table.oid = conrelid
+    JOIN pg_namespace child_schema ON child_schema.oid = child_table.relnamespace
+    WHERE contype = 'f'
+      AND confrelid = 'auth.users'::regclass
+      AND child_schema.nspname = 'public'
   LOOP
     EXECUTE format('ALTER TABLE %s DROP CONSTRAINT %I', c.table_name, c.conname);
   END LOOP;
@@ -104,9 +112,7 @@ BEGIN
 END $$;
 
 -- New-account defaults are created by the FastAPI verification transaction.
--- Keep the old Supabase Auth triggers from creating duplicate application records.
-DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-DROP TRIGGER IF EXISTS on_auth_user_created_grant_admin ON auth.users;
+-- Supabase-managed auth tables and triggers are intentionally left untouched.
 
 -- Service-role-only access is intentional: clients must use FastAPI for auth/data.
 COMMENT ON TABLE public.app_users IS 'Application-owned identities. Do not use Supabase Auth for account creation.';
