@@ -36,7 +36,9 @@ export type BackendUser = {
   add_ons: string[];
 };
 
-const API_BASE = (import.meta.env.VITE_BACKEND_API_URL as string | undefined)?.replace(/\/$/, "") || "http://localhost:8000";
+const API_BASE =
+  (import.meta.env.VITE_BACKEND_API_URL as string | undefined)?.replace(/\/$/, "") ||
+  "https://mytaxfiling-backend.vercel.app";
 const ACCESS_KEY = "mytaxfiling-access-token";
 const REFRESH_KEY = "mytaxfiling-refresh-token";
 
